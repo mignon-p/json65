@@ -359,6 +359,9 @@ putchar1:                       ; a contains char, y contains str_idx
         tya
         putstate str_idx
 nextchar:
+        getstate st::parser_st
+        cmp #par_done
+        beq done
         lda charidx
         cmp inbuflast
         beq wantmore
@@ -366,6 +369,8 @@ nextchar:
         jmp parseloop
 wantmore:
         lda #J65_WANT_MORE
+        rts                     ; end of subroutine
+done:   lda #J65_DONE
         rts                     ; end of subroutine
 strtoolong:
         lda #J65_STRING_TOO_LONG
