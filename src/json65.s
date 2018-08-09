@@ -405,7 +405,7 @@ parseloop:
         rts                     ; jump table; not end of subroutine
 l_ready:
         jsr getchar
-        bmi nextchar            ; whitespace
+        bmi jmp_nextchar        ; whitespace
         bit flags_prop_lit_or_num
         bne start_lit
         and #prop_sc
@@ -425,7 +425,7 @@ start_lit:
         getstate st::parser_st
         tay
         lda literal_errors,y
-        bne error
+        bne jmp_error
         lda #prop_lit | prop_int | prop_num
         putstate st::flags
         lda #lex_literal
@@ -453,6 +453,7 @@ l_string:
 got_backslash:
         lda #lex_str_escape
         putstate st::lexer_st
+jmp_nextchar:
         jmp nextchar
 got_quote:
         jsr handle_string
@@ -463,6 +464,7 @@ finished_scalar:
         jmp nextchar
 illegal_char:
         lda #J65_ILLEGAL_CHAR
+jmp_error:
         jmp error
 l_str_escape:
         lda #lex_string
