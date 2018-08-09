@@ -1,11 +1,16 @@
         .macpack generic
         .include "zeropage.inc"
-        .import saveeax
-        .import negeax
-        .import resteax
+
+        ;; routines from the cc65 runtime library
         .import callptr4
         .import decsp3
         .import incsp4
+        .import negeax
+        .import resteax
+        .import saveeax
+
+        .export _j65_init
+        .export _j65_parse
 
 ;; zero page locations
         state     = regbank
