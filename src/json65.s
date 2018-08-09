@@ -1,5 +1,11 @@
         .macpack generic
         .include "zeropage.inc"
+        .import saveeax
+        .import negeax
+        .import resteax
+        .import callptr4
+        .import decsp3
+        .import incsp4
 
 ;; zero page locations
         state     = regbank
@@ -135,7 +141,7 @@
 .proc _j65_init
         sta ptr1
         stx ptr1+1
-        ldy #.sizeof st - 1
+        ldy #.sizeof(st) - 1
         lda #0
 loop:   sta (ptr1),y
         dey
@@ -144,7 +150,7 @@ loop:   sta (ptr1),y
         putstate st::parser_st2
         lda #$ff
         putstate st::stack_idx
-        lda #.sizeof st
+        lda #.sizeof(st)
         putstate st::stack_min
         rts
 .endproc                ; _j65_init
@@ -176,11 +182,11 @@ loop:   lda jlen+1
         pha                     ; save jlen on 6502 stack
         lda jlen
         pha
-        lda #ff
+        lda #$ff
         sta inbuflast
         jsr parse
         tax
-        lda #ff                 ; increment file_pos by 256
+        lda #$ff                ; increment file_pos by 256
         jsr add_a_plus_1_to_file_pos
         pla                     ; restore jlen off 6502 stack
         sta jlen
@@ -288,7 +294,7 @@ start_lit:
         putstate st::lexer_st   ; fall thru and process same char as literal
 l_literal:
         jsr getchar
-        ldy #flags
+        ldy #st::flags
         and (state),y
         bne goodliteral
         lda (state),y
@@ -301,9 +307,9 @@ l_string:
         jsr getchar
         and #prop_str
         beq illegal_char
-        cpx #'\\'
+        cpx #$5C                ; backslash
         beq got_backslash
-        cpx #'\"'
+        cpx #$22                ; double quote
         beq got_quote
         jmp putchar
 got_backslash:
@@ -321,12 +327,12 @@ illegal_char:
         lda #J65_ILLEGAL_CHAR
         jmp error
 l_str_escape:
-        lda #lex_str
+        lda #lex_string
         putstate st::lexer_st
         ldy charidx             ; don't need to jsr getchar; don't need props
         lda (inbuf),y
         sta esc_code
-        cmp #'\\'
+        cmp #$5c                ; backslash
         beq escape_later
         cmp #'u'
         beq escape_later
@@ -340,16 +346,16 @@ illegal_escape:
 escape_later:
         lda #1
         putstate st::flags      ; flag indicating we need a later escape pass
-        getstate str_idx        ; re-insert backslash first
+        getstate st::str_idx    ; re-insert backslash first
         tay
-        lda #'\\'
+        lda #$5c                ; backslash
         sta (strbuf),y
         iny
         beq strtoolong
         lda esc_code
         jmp putchar1
 putchar:                        ; x contains char to put in string buf
-        getstate str_idx
+        getstate st::str_idx
         tay
         txa
 putchar1:                       ; a contains char, y contains str_idx
@@ -357,7 +363,7 @@ putchar1:                       ; a contains char, y contains str_idx
         iny
         beq strtoolong
         tya
-        putstate str_idx
+        putstate st::str_idx
 nextchar:
         getstate st::parser_st
         cmp #par_done
@@ -456,23 +462,23 @@ flags_prop_lit_or_num:
 .define dt_comma TODO
 .define dt_quote TODO
 dispatch_tab_l:
-        .lobytes dt_none
-        .lobytes dt_lsq
-        .lobytes dt_lcur
-        .lobytes dt_rsq
-        .lobytes dt_rcur
-        .lobytes dt_colon
-        .lobytes dt_comma
-        .lobytes dt_quote
+;        .lobytes dt_none
+;        .lobytes dt_lsq
+;        .lobytes dt_lcur
+;        .lobytes dt_rsq
+;        .lobytes dt_rcur
+;        .lobytes dt_colon
+;        .lobytes dt_comma
+;        .lobytes dt_quote
 dispatch_tab_h:
-        .hibytes dt_none
-        .hibytes dt_lsq
-        .hibytes dt_lcur
-        .hibytes dt_rsq
-        .hibytes dt_rcur
-        .hibytes dt_colon
-        .hibytes dt_comma
-        .hibytes dt_quote
+;        .hibytes dt_none
+;        .hibytes dt_lsq
+;        .hibytes dt_lcur
+;        .hibytes dt_rsq
+;        .hibytes dt_rcur
+;        .hibytes dt_colon
+;        .hibytes dt_comma
+;        .hibytes dt_quote
 
 .undefine dt_none
 .undefine dt_lsq
@@ -577,7 +583,7 @@ notfound:
 
         .rodata
 escape_codes:
-        .asciiz "\"/bfnrt"
+        .byte $22,"/bfnrt",0
 escaped_chars:
         .byte $22, $2f, $08, $0c, $0a, $0d, $09
         .code
@@ -653,7 +659,7 @@ loop:   cpy tmp2
         beq done
         lda (strbuf),y
         iny
-        cmp #'\\'
+        cmp #$5c                ; backslash
         beq escape
 loop1:  sty tmp0
         ldy tmp1
@@ -665,7 +671,7 @@ escape: cpy tmp2
         beq error
         lda (strbuf),y
         iny
-        cmp #'\\'
+        cmp #$5c                ; backslash
         beq loop1
         cmp #'u'
         beq unicode
@@ -678,7 +684,7 @@ unicode:
         lda (strbuf),y
         cpy tmp2
         beq bmp
-        cmp #'\\'
+        cmp #$5c                ; backslash
         bne bmp
         iny
         cpy tmp2
@@ -938,7 +944,7 @@ yes:    sec
 
 ;; combine left surrogate in long1 with right surrogate in sreg.
 ;; result in long1.  preserves y.
-.proc combine_surrogate
+.proc combine_surrogates
         lda long1+1
         and #3
         sta long1+2
@@ -1146,7 +1152,7 @@ loop:   lda (strbuf),y
         bpl loop
         lda #0                  ; set zero flag
 done:   rts
-        .end                    ; compare_strings
+.endproc                    ; compare_strings
 
 ;; Handle a literal (a number, or null, true, or false).
 ;; On entry, a should contain flags.  (prop_lit, prop_int, prop_num)
@@ -1195,6 +1201,8 @@ keyword:
         .rodata
 flags_prop_lit:
         .byte prop_lit
+flags_prop_int:
+        .byte prop_int
         .code
 
 .endproc                ; handle_literal
