@@ -34,7 +34,7 @@ L:      lda save_zp,y
         dey
         bpl L
         ldy save_y
-        ldy save_x
+        ldx save_x
         lda save_a
         .endmacro               ; restore_regs
 
