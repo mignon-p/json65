@@ -1,3 +1,8 @@
+#ifndef J65_H
+#define J65_H
+
+#include <stdint.h>
+
 enum j65_event {
     /* events */
     J65_NULL        = 0,
@@ -30,10 +35,14 @@ enum j65_status {
     J65_ERROR     = 2,
 };
 
+typedef struct {
+    uint8_t dummy[512];
+} j65_state;
+
 typedef void __fastcall__ (*j65_callback)(void *ctx, uint8_t event, int32_t data);
 
 uint8_t __fastcall__ j65_parse(void *ctx, j65_callback cb, j65_state *s, const char *buf, size_t len);
 
 void __fastcall__ j65_init(j65_state *s);
 
-
+#endif  /* J65_H */
