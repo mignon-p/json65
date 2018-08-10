@@ -531,6 +531,21 @@ disp_illegal_char:
 disp_parse_error:
         lda #J65_PARSE_ERROR
         jmp error
+disp_exp_string:
+        lda #J65_EXPECTED_STRING
+        jmp error
+disp_exp_colon:
+        lda #J65_EXPECTED_COLON
+        jmp error
+disp_exp_comma:
+        lda #J65_EXPECTED_COMMA
+        jmp error
+disp_exp_obj_end:
+        lda #J65_EXPECTED_OBJ_END
+        jmp error
+disp_exp_array_end:
+        lda #J65_EXPECTED_ARRAY_END
+        jmp error
 disp_start_obj:
         ldx #J65_START_OBJ
         lda #0                  ; index into close_states
@@ -593,32 +608,32 @@ lex_tab_h:
 flags_prop_lit_or_num:
         .byte prop_lit | prop_int | prop_num
 
-.define dt_none  TODO
-.define dt_lsq   TODO
-.define dt_lcur  TODO
-.define dt_rsq   TODO
-.define dt_rcur  TODO
-.define dt_colon TODO
-.define dt_comma TODO
-.define dt_quote TODO
+.define dt_none  disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1
+.define dt_lsq   disp_start_array-1,disp_start_array-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
+.define dt_lcur  disp_start_obj-1,disp_start_obj-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
+.define dt_rsq   disp_parse_error-1,disp_end_array-1,disp_exp_obj_end-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_obj_end-1,disp_parse_error-1,disp_parse_error-1
+.define dt_rcur  disp_parse_error-1,disp_exp_array_end-1,disp_end_obj-1,disp_exp_colon-1,disp_exp_array_end-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
+.define dt_colon disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
+.define dt_comma disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_exp_colon-1,disp_end_array-1,disp_end_obj-1,disp_parse_error-1,disp_parse_error-1
+.define dt_quote disp_start_string-1,disp_start_string-1,disp_start_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
 dispatch_tab_l:
-;        .lobytes dt_none
-;        .lobytes dt_lsq
-;        .lobytes dt_lcur
-;        .lobytes dt_rsq
-;        .lobytes dt_rcur
-;        .lobytes dt_colon
-;        .lobytes dt_comma
-;        .lobytes dt_quote
+        .lobytes dt_none
+        .lobytes dt_lsq
+        .lobytes dt_lcur
+        .lobytes dt_rsq
+        .lobytes dt_rcur
+        .lobytes dt_colon
+        .lobytes dt_comma
+        .lobytes dt_quote
 dispatch_tab_h:
-;        .hibytes dt_none
-;        .hibytes dt_lsq
-;        .hibytes dt_lcur
-;        .hibytes dt_rsq
-;        .hibytes dt_rcur
-;        .hibytes dt_colon
-;        .hibytes dt_comma
-;        .hibytes dt_quote
+        .hibytes dt_none
+        .hibytes dt_lsq
+        .hibytes dt_lcur
+        .hibytes dt_rsq
+        .hibytes dt_rcur
+        .hibytes dt_colon
+        .hibytes dt_comma
+        .hibytes dt_quote
 
 .undefine dt_none
 .undefine dt_lsq
