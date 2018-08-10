@@ -14,6 +14,8 @@ int main (int argc, char **argv) {
     uint8_t ret;
     const char *str = "[] ";
 
+    printf ("str is '%s' and address is %p\n", str, str);
+
     j65_init(&state);
     ret = j65_parse(NULL, callback, &state, str, strlen(str));
     printf ("Return value %u\n", ret);

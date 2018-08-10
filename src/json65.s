@@ -247,9 +247,16 @@ done:   jsr incsp4              ; pop ctx and cb off of C stack
 ;; on exit. clobbers y.
 ;; negative flag is set based on hi bit of properties.  (prop_ws)
 .proc getchar
+        lda inbuf+1
+        jsr debug_hex
+        lda inbuf
+        jsr debug_hex
+        print_str " "
+        ldx inbuf+1
+        jsr debug_str
         ldy charidx
         tya
-        print_str "index "
+        print_str " index "
         jsr debug_hex
         lda (inbuf),y
         print_str " char "
