@@ -1338,9 +1338,9 @@ parse_err:
 p_ready:
         txa
         bit flags_prop_lit
-        beq keyword
+        bne keyword
         bit flags_prop_int
-        beq integer
+        bne integer
 number: jsr string_in_regsave
         lda #J65_NUMBER
 do_callback:
