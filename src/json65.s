@@ -1,5 +1,4 @@
         .macpack generic
-        .macpack longbranch
         .include "zeropage.inc"
         .include "debug.inc"
 
@@ -428,27 +427,8 @@ parseloop:
         rts                     ; jump table; not end of subroutine
 l_ready:
         jsr getchar
-        jmi nextchar            ; whitespace
-        pha
-        print_str "flags_prop_lit_or_num "
-        lda flags_prop_lit_or_num
-        jsr debug_hex
-        print_str " props "
-        pla
-        pha
-        jsr debug_hex
-        and flags_prop_lit_or_num
-        print_str " and "
-        jsr debug_hex
-        pla
+        bmi jmp_nextchar        ; whitespace
         bit flags_prop_lit_or_num
-        php
-        pla
-        pha
-        print_str " flags "
-        jsr debug_hex
-        jsr debug_nl
-        plp
         bne start_lit
         and #prop_sc
         asl
@@ -464,8 +444,6 @@ l_ready:
         pha
         rts                     ; jump table; not end of subroutine
 start_lit:
-        print_str "How did we get here?"
-        jsr debug_nl
         getstate st::parser_st
         tay
         lda literal_errors,y
