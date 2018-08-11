@@ -144,9 +144,12 @@
 
 ;; void __fastcall__ j65_init(j65_state *s);
 .proc _j65_init
-        sta tmp1
-        save_regbank
-        lda tmp1
+        pha
+        lda state               ; save first 2 bytes of regbank
+        sta ptr1
+        lda state+1
+        sta ptr1+1
+        pla
         sta state
         stx state+1
         ldy #.sizeof(st) - 1
@@ -160,7 +163,10 @@ loop:   sta (state),y
         putstate st::stack_idx
         lda #.sizeof(st)
         putstate st::stack_min
-        restore_regbank
+        lda ptr1                ; restore first 2 bytes of regbank
+        sta state
+        lda ptr1+1
+        sta state+1
         rts
 .endproc                ; _j65_init
 
