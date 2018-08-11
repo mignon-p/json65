@@ -1,6 +1,5 @@
         .macpack generic
         .include "zeropage.inc"
-        .include "debug.inc"
 
         ;; routines from the cc65 runtime library
         .import callptr4
@@ -252,23 +251,13 @@ done:   jsr incsp4              ; pop ctx and cb off of C stack
 ;; negative flag is set based on hi bit of properties.  (prop_ws)
 .proc getchar
         ldy charidx
-        tya
-        print_str "index "
-        jsr debug_hex
         lda (inbuf),y
-        print_str " char "
-        jsr debug_hex
         tax
         bmi hiset
         lda charprops,x
-done:   php
-        print_str " props "
-        jsr debug_hex
-        jsr debug_nl
-        plp
         rts
 hiset:  lda #prop_str           ; non-ascii unicode char, legal only in strings
-        jmp done
+        rts
 
         .rodata
 charprops:
