@@ -1,6 +1,5 @@
         .macpack generic
         .include "zeropage.inc"
-        .include "debug.inc"
 
         ;; routines from the cc65 runtime library
         .import callptr4
@@ -542,8 +541,6 @@ disp_illegal_char:
         lda #J65_ILLEGAL_CHAR
         jmp error
 disp_parse_error:
-        print_str "disp_parse_error"
-        jsr debug_nl
         lda #J65_PARSE_ERROR
         jmp error
 disp_exp_string:
@@ -941,9 +938,6 @@ fail:   sec
 ;; sets carry if not a hex digit.
 ;; preserves x and y.
 .proc hex_dig_to_nibble
-        print_str "hex_dig_to_nibble "
-        jsr debug_hex
-        jsr debug_nl
         cmp #'0'
         blt fail
         cmp #'9'+1
@@ -1200,9 +1194,7 @@ overflow:
 an_rts: rts
 done:   clc
         rts
-error:  print_str "parse_unsigned_integer: error"
-        jsr debug_nl
-        clv
+error:  clv
         sec
         rts
 .endproc                ; parse_unsigned_integer
@@ -1342,11 +1334,7 @@ done:   rts
         beq p_ready
         cmp #par_ready_or_close_array
         beq p_ready
-        print_str "fall thru"
-        jsr debug_hex
 parse_err:
-        print_str "handle_literal: parse error"
-        jsr debug_nl
         lda #J65_PARSE_ERROR
         sec
         rts                     ; error exit
@@ -1372,12 +1360,8 @@ integer:
         jmp do_callback
 not_integer:
         bvs number
-        print_str "not_integer"
-        jsr debug_nl
         jmp parse_err
 keyword:
-        print_str "keyword"
-        jsr debug_nl
         jsr identify_literal
         bcs parse_err
         jmp do_callback
@@ -1432,8 +1416,6 @@ stack_full:
         clc
         rts
 stack_empty:
-        print_str "stack_empty"
-        jsr debug_nl
         lda #J65_PARSE_ERROR
         sec
         rts
