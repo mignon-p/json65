@@ -14,8 +14,9 @@ save_zp:
         .res zp_bytes
         .code
 
-        .macro save_regs
+.macro save_regs
         .local L
+        php
         sta save_a
         stx save_x
         sty save_y
@@ -24,9 +25,9 @@ L:      lda sreg,y
         sta save_zp,y
         dey
         bpl L
-        .endmacro               ; save_regs
+.endmacro               ; save_regs
 
-        .macro restore_regs
+.macro restore_regs
         .local L
         ldy #zp_bytes-1
 L:      lda save_zp,y
@@ -36,13 +37,15 @@ L:      lda save_zp,y
         ldy save_y
         ldx save_x
         lda save_a
-        .endmacro               ; restore_regs
+        plp
+.endmacro               ; restore_regs
 
-        .macro print_str str
+.macro print_str str
         .local S
         .data
 S:      .asciiz str
         .code
+        php
         sta save0a
         stx save0x
         lda #<S
@@ -50,9 +53,30 @@ S:      .asciiz str
         jsr debug_str
         ldx save0x
         lda save0a
-        .endmacro               ; print_str
+        plp
+.endmacro               ; print_str
 
-        .proc debug_str
+.macro print_hex
+        jsr debug_hex
+.endmacro               ; print_hex
+
+.macro print_str_nl str
+        print_str str
+        jsr debug_nl
+.endmacro               ; print_str_nl
+
+.macro print_hex_nl
+        jsr debug_hex
+        jsr debug_nl
+.endmacro               ; print_hex_nl
+
+.macro print_str_hex_nl st
+        print_str str
+        jsr debug_hex
+        jsr debug_nl
+.endmacro               ; print_str_hex_nl
+
+.proc debug_str
         save_regs
         lda #<percent_s
         ldx #>percent_s
@@ -70,9 +94,9 @@ percent_s:
         .asciiz "%s"
         .code
 
-        .endproc                ; debug_str
+.endproc                ; debug_str
 
-        .proc debug_hex
+.proc debug_hex
         save_regs
         lda #<percent_x
         ldx #>percent_x
@@ -89,9 +113,9 @@ percent_x:
         .asciiz "%02X"
         .code
 
-        .endproc                ; debug_hex
+.endproc                ; debug_hex
 
-        .proc debug_nl
+.proc debug_nl
         save_regs
         lda #<newline
         ldx #>newline
@@ -106,4 +130,4 @@ newline:
         .byte $0a, $00
         .code
 
-        .endproc                ; debug_nl
+.endproc                ; debug_nl
