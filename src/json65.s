@@ -456,9 +456,6 @@ l_ready:
         asl
         sta tmp1
         getstate st::parser_st
-        print_str "state "
-        jsr debug_hex
-        jsr debug_nl
         ora tmp1
         tay
         lda dispatch_tab_h,y
@@ -594,8 +591,6 @@ disp_exp_array_end:
         lda #J65_EXPECTED_ARRAY_END
         jmp error
 disp_start_obj:
-        print_str "disp_start_obj"
-        jsr debug_nl
         ldx #J65_START_OBJ
         lda #0                  ; index into close_states
 descend:
@@ -606,13 +601,8 @@ descend:
         jsr push_state_stack
         pla
         bcs error
-        print_str "x = "
-        jsr debug_hex
         tax
         lda close_states,x
-        print_str " close_state = "
-        jsr debug_hex
-        jsr debug_nl
         putstate st::parser_st
         lda close_states+1,x
         putstate st::parser_st2
@@ -622,13 +612,11 @@ disp_end_obj:
 ascend: sta evtype
         jsr call_callback
         jsr pop_state_stack
-        jcs error
+        bcs error
         putstate st::parser_st
         putstate st::parser_st2
         jmp nextchar
 disp_start_array:
-        print_str "disp_start_array"
-        jsr debug_nl
         ldx #J65_START_ARRAY
         lda #2                  ; index into close_states
         jmp descend
