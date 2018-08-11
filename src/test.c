@@ -7,15 +7,22 @@
 static j65_state state;
 
 static void callback (void *ctx, uint8_t event, int32_t data) {
-    printf ("Got event %u ($%02X)\n", event, event);
+    printf ("    Got event %u ($%02X) with data %ld\n", event, event, data);
+}
+
+static void test (char *str) {
+    uint8_t ret;
+
+    printf ("Testing '%s'\n", str);
+    j65_init(&state);
+    ret = j65_parse(NULL, callback, &state, str, strlen(str));
+    printf ("Return value %u\n\n", ret);
 }
 
 int main (int argc, char **argv) {
-    uint8_t ret;
-    const char *str = "[] ";
+    test ("[] ");
+    test ("{} ");
+    test ("1234 ");
 
-    j65_init(&state);
-    ret = j65_parse(NULL, callback, &state, str, strlen(str));
-    printf ("Return value %u\n", ret);
     return 0;
 }
