@@ -436,26 +436,35 @@ l_ready:
         and flags_prop_lit_or_num
         print_str " and "
         jsr debug_hex
+        jsr debug_nl
         pla
         bit flags_prop_lit_or_num
+.if 0
         php
         pla
         pha
         print_str " flags "
         jsr debug_hex
-        jsr debug_nl
         plp
+.endif
         bne start_lit
         and #prop_sc
+        print_str "flags anded "
+        jsr debug_hex
         asl
         asl
         asl
         sta tmp1
+        print_str " shifted "
+        jsr debug_hex
+        jsr debug_nl
         getstate st::parser_st
         print_str "state "
         jsr debug_hex
-        jsr debug_nl
         ora tmp1
+        print_str " index "
+        jsr debug_hex
+        jsr debug_nl
         tay
         lda dispatch_tab_h,y
         pha
@@ -1430,10 +1439,14 @@ flags_prop_int:
         dey
         tya
         putstate st::stack_idx
+        print_str "push success"
+        jsr debug_nl
         clc
         rts
 stack_full:
         lda #J65_NESTING_TOO_DEEP
+        print_str "push failure"
+        jsr debug_nl
         sec
         rts
 .endproc                ; push_state_stack
@@ -1452,10 +1465,14 @@ stack_full:
         tya
         putstate st::stack_idx
         txa
+        print_str "pop success"
+        jsr debug_nl
         clc
         rts
 stack_empty:
         lda #J65_PARSE_ERROR
+        print_str "pop failure"
+        jsr debug_nl
         sec
         rts
 .endproc                ; pop_state_stack
