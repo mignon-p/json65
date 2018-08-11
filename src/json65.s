@@ -184,6 +184,7 @@ loop:   sta (ptr1),y
         add #1                  ; strbuf is state+256
         sta strbuf+1
         jsr incsp4              ; remove state and buf from C stack
+        jsr print_idx
 loop:   lda jlen+1
         beq leftovers
         pha                     ; save jlen on 6502 stack
@@ -415,6 +416,7 @@ charprops:
         lda #0
         sta charidx
 parseloop:
+        jsr print_idx
         getstate st::lexer_st
         tay
         lda lex_tab_h,y
@@ -1423,6 +1425,22 @@ flags_prop_int:
 
 .endproc                ; handle_literal
 
+.proc print_idx
+        php
+        pha
+        tya
+        pha
+        print_str "stack_index = "
+        getstate st::stack_idx
+        jsr debug_hex
+        jsr debug_nl
+        pla
+        tay
+        pla
+        plp
+        rts
+.endproc
+
 ;; push a onto the state stack.
 ;; carry clear on success.
 ;; carry set on error, with error event in a.
@@ -1433,6 +1451,9 @@ flags_prop_int:
         ldy #st::stack_min
         cmp (state),y
         blt stack_full
+        print_str "[push] stack_index = "
+        jsr debug_hex
+        jsr debug_nl
         tay
         txa
         sta (state),y
@@ -1457,6 +1478,9 @@ stack_full:
 ;; clobbers x, y.
 .proc pop_state_stack
         getstate st::stack_idx
+        print_str "[pop]stack index = "
+        jsr debug_hex
+        jsr debug_nl
         tay
         iny
         beq stack_empty
