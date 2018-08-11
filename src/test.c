@@ -23,6 +23,14 @@ int main (int argc, char **argv) {
     test ("[] ");
     test ("{} ");
     test ("1234 ");
+    test ("-10000000 ");
+    test ("1.5 ");
+    test ("1e-2 ");
+    test ("\"Hello, World\" ");
+    test ("null ");
+    test ("false ");
+    test ("true ");
+    test ("{\"foo\": 5} ");
 
     return 0;
 }
