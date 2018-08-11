@@ -1,5 +1,7 @@
         .macpack generic
         .include "zeropage.inc"
+        .include "debug.inc"
+        .macpack longbranch
 
         ;; routines from the cc65 runtime library
         .import callptr4
@@ -258,6 +260,7 @@ done:   jsr incsp4              ; pop ctx and cb off of C stack
 .proc getchar
         ldy charidx
         lda (inbuf),y
+        print_str_hex_nl "getchar "
         tax
         bmi hiset
         lda charprops,x
@@ -415,7 +418,7 @@ parseloop:
         rts                     ; jump table; not end of subroutine
 l_ready:
         jsr getchar
-        bmi jmp_nextchar        ; whitespace
+        jmi nextchar            ; whitespace
         bit flags_prop_lit_or_num
         bne start_lit
         and #prop_sc
@@ -424,6 +427,7 @@ l_ready:
         asl
         sta tmp1
         getstate st::parser_st
+        print_str_hex_nl "state is "
         ora tmp1
         tay
         lda dispatch_tab_h,y
@@ -470,7 +474,7 @@ jmp_nextchar:
 got_quote:
         jsr handle_string
 finished_scalar:
-        bcs error
+        jcs error
         lda #lex_ready
         putstate st::lexer_st
         jmp nextchar
@@ -526,6 +530,8 @@ nextchar:
         inc charidx
         jmp parseloop
 wantmore:
+        getstate st::parser_st
+        print_str_hex_nl "parser state: "
         lda #J65_WANT_MORE
         rts                     ; end of subroutine
 done:   lda #J65_DONE
@@ -1350,6 +1356,7 @@ do_callback:
         sta evtype
         jsr call_callback
         getstate st::parser_st2 ; get next parser state in a
+        print_str_hex_nl "parser_st2 "
         putstate st::parser_st
         clc
         rts                     ; success exit
@@ -1413,6 +1420,7 @@ stack_full:
         tya
         putstate st::stack_idx
         txa
+        print_str_hex_nl "popped state: "
         clc
         rts
 stack_empty:
