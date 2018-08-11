@@ -7,7 +7,7 @@
 static j65_state state;
 
 static void callback (void *ctx, uint8_t event, int32_t data) {
-    printf ("Got event %u\n", event);
+    printf ("Got event %u ($%02X)\n", event, event);
 }
 
 int main (int argc, char **argv) {

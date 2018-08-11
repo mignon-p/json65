@@ -17,16 +17,16 @@ enum j65_event {
     J65_START_ARRAY = 9,
     J65_END_ARRAY   = 10,
     /* errors */
-    J65_ILLEGAL_CHAR     = 0x80, /* integer (byte offset of error) */
-    J65_ILLEGAL_ESCAPE,          /* integer (byte offset of error) */
-    J65_NESTING_TOO_DEEP,        /* integer (byte offset of error) */
-    J65_STRING_TOO_LONG,         /* integer (byte offset of error) */
-    J65_PARSE_ERROR,             /* integer (byte offset of error) */
-    J65_EXPECTED_STRING,         /* integer (byte offset of error) */
-    J65_EXPECTED_COLON,          /* integer (byte offset of error) */
-    J65_EXPECTED_COMMA,          /* integer (byte offset of error) */
-    J65_EXPECTED_OBJ_END,        /* integer (byte offset of error) */
-    J65_EXPECTED_ARRAY_END,      /* integer (byte offset of error) */
+    J65_ILLEGAL_CHAR       = 0x80, /* integer (byte offset of error) */
+    J65_ILLEGAL_ESCAPE     = 0x81, /* integer (byte offset of error) */
+    J65_NESTING_TOO_DEEP   = 0x82, /* integer (byte offset of error) */
+    J65_STRING_TOO_LONG    = 0x83, /* integer (byte offset of error) */
+    J65_PARSE_ERROR        = 0x84, /* integer (byte offset of error) */
+    J65_EXPECTED_STRING    = 0x85, /* integer (byte offset of error) */
+    J65_EXPECTED_COLON     = 0x86, /* integer (byte offset of error) */
+    J65_EXPECTED_COMMA     = 0x87, /* integer (byte offset of error) */
+    J65_EXPECTED_OBJ_END   = 0x88, /* integer (byte offset of error) */
+    J65_EXPECTED_ARRAY_END = 0x89, /* integer (byte offset of error) */
 };
 
 enum j65_status {
