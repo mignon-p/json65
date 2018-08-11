@@ -70,7 +70,7 @@ S:      .asciiz str
         jsr debug_nl
 .endmacro               ; print_hex_nl
 
-.macro print_str_hex_nl st
+.macro print_str_hex_nl str
         print_str str
         jsr debug_hex
         jsr debug_nl
