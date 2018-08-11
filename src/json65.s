@@ -439,6 +439,8 @@ start_lit:
         bne jmp_error
         lda #prop_lit | prop_int | prop_num
         putstate st::flags
+        lda #0
+        putstate st::str_idx
         lda #lex_literal
         putstate st::lexer_st   ; fall thru and process same char as literal
 l_literal:
@@ -597,6 +599,7 @@ disp_start_string:
         putstate st::lexer_st
         lda #0
         putstate st::flags      ; boolean for second unescape pass
+        putstate st::str_idx
         jmp nextchar
 disp_comma_array:
         lda #par_ready_or_close_array
