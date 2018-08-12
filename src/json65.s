@@ -448,6 +448,12 @@ l_literal:
         and (state),y
         bne goodliteral
         lda (state),y
+        tax
+        getstate st::str_idx
+        tay
+        lda #0
+        sta (strbuf),y          ; null-terminate string
+        txa
         jsr handle_literal
         bcs jmp_error
         lda #lex_ready
@@ -773,6 +779,10 @@ escaped_chars:
         lda #J65_ILLEGAL_ESCAPE
         rts                     ; error exit; carry is still set
 skipescape:
+        getstate st::str_idx
+        tay
+        lda #0
+        sta (strbuf),y          ; null-terminate string
         getstate st::parser_st
         cmp #par_ready
         beq p_ready
