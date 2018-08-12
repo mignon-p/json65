@@ -11,9 +11,8 @@ static void callback (void *ctx, j65_state *s, uint8_t event, int32_t data) {
     if (event == J65_INTEGER || event >= J65_ILLEGAL_CHAR) {
         printf (" with long %ld\n", data);
     } else if (event == J65_NUMBER || event == J65_STRING || event == J65_KEY) {
-        j65_union u;
-        u.val = data;
-        printf (" with string '%s' of length %u\n", u.str.ptr, u.str.len);
+        printf (" with string '%s' of length %u\n",
+                j65_get_string(s), j65_get_length(s));
     } else {
         printf ("\n");
     }

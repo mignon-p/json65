@@ -1,7 +1,7 @@
         .macpack generic
         .include "zeropage.inc"
 
-        ;; routines from the cc65 runtime library
+;; routines from the cc65 runtime library
         .import callptr4
         .import decsp5
         .import incsp4
@@ -11,6 +11,8 @@
 
         .export _j65_init
         .export _j65_parse
+        .export _j65_get_string
+        .export _j65_get_length
 
 ;; zero page locations
         state     = regbank
@@ -1438,3 +1440,21 @@ stack_empty:
         sec
         rts
 .endproc                ; pop_state_stack
+
+;; const char * __fastcall__ j65_get_string(const j65_state *s);
+;; (string buffer is the second 256 bytes of state, so all we have
+;; to do is increment the high byte of the argument)
+.proc _j65_get_string
+        inx
+        rts
+.endproc                ; _j65_get_string
+
+;; size_t __fastcall__ j65_get_length(const j65_state *s);
+.proc _j65_get_length
+        sta ptr1
+        stx ptr1+1
+        ldy #st::str_idx
+        lda (ptr1),y
+        ldx #0
+        rts
+.endproc                ; _j65_get_length
