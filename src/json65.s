@@ -453,7 +453,10 @@ l_literal:
         bne goodliteral
         lda (state),y
         jsr handle_literal
-        jmp finished_scalar
+        jcs error
+        lda #lex_ready
+        putstate st::lexer_st
+        jmp parseloop           ; process the same character again
 goodliteral:
         sta (state),y           ; write back flags after and
         jmp putchar
@@ -473,7 +476,6 @@ jmp_nextchar:
         jmp nextchar
 got_quote:
         jsr handle_string
-finished_scalar:
         jcs error
         lda #lex_ready
         putstate st::lexer_st
