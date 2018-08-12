@@ -40,6 +40,7 @@ int main (int argc, char **argv) {
     test ("false ");
     test ("true ");
     test ("{\"foo\": 5} ");
+    test ("{\"foo\": \"bar\", \"baz\": [1, 2, 3]} ");
 
     return 0;
 }
