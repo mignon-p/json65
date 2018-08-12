@@ -39,6 +39,16 @@ typedef struct {
     uint8_t dummy[512];
 } j65_state;
 
+typedef struct {
+    size_t len;
+    const char *ptr;
+} j65_string;
+
+typedef union {
+    int32_t val;
+    j65_string str;
+} j65_union;
+
 typedef void __fastcall__ (*j65_callback)(void *ctx, uint8_t event, int32_t data);
 
 uint8_t __fastcall__ j65_parse(void *ctx, j65_callback cb, j65_state *s, const char *buf, size_t len);

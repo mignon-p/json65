@@ -7,7 +7,16 @@
 static j65_state state;
 
 static void callback (void *ctx, uint8_t event, int32_t data) {
-    printf ("    Got event %u ($%02X) with data %ld\n", event, event, data);
+    printf ("    Got event %u ($%02X)", event, event);
+    if (event == J65_INTEGER || event >= J65_ILLEGAL_CHAR) {
+        printf (" with long %ld\n", data);
+    } else if (event == J65_NUMBER || event == J65_STRING || event == J65_KEY) {
+        j65_union u;
+        u.val = data;
+        printf (" with string '%s' of length %u\n", u.str.ptr, u.str.len);
+    } else {
+        printf ("\n");
+    }
 }
 
 static void test (char *str) {
