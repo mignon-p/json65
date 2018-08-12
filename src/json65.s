@@ -449,7 +449,7 @@ l_literal:
         bne goodliteral
         lda (state),y
         jsr handle_literal
-        jcs error
+        bcs jmp_error
         lda #lex_ready
         putstate st::lexer_st
         jmp parseloop           ; process the same character again
