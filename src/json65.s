@@ -632,10 +632,10 @@ flags_prop_lit_or_num:
 .define dt_none  disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1
 .define dt_lsq   disp_start_array-1,disp_start_array-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
 .define dt_lcur  disp_start_obj-1,disp_start_obj-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
-.define dt_rsq   disp_parse_error-1,disp_end_array-1,disp_exp_obj_end-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_obj_end-1,disp_parse_error-1,disp_parse_error-1
-.define dt_rcur  disp_parse_error-1,disp_exp_array_end-1,disp_end_obj-1,disp_exp_colon-1,disp_exp_array_end-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
+.define dt_rsq   disp_parse_error-1,disp_end_array-1,disp_exp_obj_end-1,disp_exp_colon-1,disp_end_array-1,disp_exp_obj_end-1,disp_parse_error-1,disp_parse_error-1
+.define dt_rcur  disp_parse_error-1,disp_exp_array_end-1,disp_end_obj-1,disp_exp_colon-1,disp_exp_array_end-1,disp_end_obj-1,disp_parse_error-1,disp_parse_error-1
 .define dt_colon disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
-.define dt_comma disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_exp_colon-1,disp_end_array-1,disp_end_obj-1,disp_parse_error-1,disp_parse_error-1
+.define dt_comma disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_exp_colon-1,disp_comma_array-1,disp_comma_object-1,disp_parse_error-1,disp_parse_error-1
 .define dt_quote disp_start_string-1,disp_start_string-1,disp_start_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
 dispatch_tab_l:
         .lobytes dt_none

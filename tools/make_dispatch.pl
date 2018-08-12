@@ -59,8 +59,8 @@ $table{$rcur}[$key_co]  = $eobj;
 $table{$colon}[$ncolon] = $dcolon;
 $table{$comma}[$ncomma_ca] = $comarr;
 $table{$comma}[$ncomma_co] = $comobj;
-$table{$comma}[$ncomma_ca] = $earr;
-$table{$comma}[$ncomma_co] = $eobj;
+$table{$rsq}[$ncomma_ca] = $earr;
+$table{$rcur}[$ncomma_co] = $eobj;
 
 foreach my $schar (@schars) {
     printf ".define %-8s", $schar;
