@@ -3,7 +3,7 @@
 
         ;; routines from the cc65 runtime library
         .import callptr4
-        .import decsp3
+        .import decsp5
         .import incsp4
         .import negeax
         .import resteax
@@ -686,8 +686,8 @@ literal_errors:                 ; needs to match parser state enum
         pha
         lda charidx
         pha
-        jsr decsp3              ; make room for 3 bytes of arguments
-        ldy #6
+        jsr decsp5              ; make room for 5 bytes of arguments
+        ldy #8
         lda (sp),y              ; context hi
         tax
         dey
@@ -705,6 +705,12 @@ literal_errors:                 ; needs to match parser state enum
         lda tmp1
         dey
         sta (sp),y              ; context lo
+        lda state+1
+        dey
+        sta (sp),y              ; state hi
+        lda state
+        dey
+        sta (sp),y              ; state lo
         lda evtype
         dey
         sta (sp),y              ; event type

@@ -49,7 +49,7 @@ typedef union {
     j65_string str;
 } j65_union;
 
-typedef void __fastcall__ (*j65_callback)(void *ctx, uint8_t event, int32_t data);
+typedef void __fastcall__ (*j65_callback)(void *ctx, j65_state *s, uint8_t event, int32_t data);
 
 uint8_t __fastcall__ j65_parse(void *ctx, j65_callback cb, j65_state *s, const char *buf, size_t len);
 

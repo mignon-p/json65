@@ -6,7 +6,7 @@
 
 static j65_state state;
 
-static void callback (void *ctx, uint8_t event, int32_t data) {
+static void callback (void *ctx, j65_state *s, uint8_t event, int32_t data) {
     printf ("    Got event %u ($%02X)", event, event);
     if (event == J65_INTEGER || event >= J65_ILLEGAL_CHAR) {
         printf (" with long %ld\n", data);
