@@ -7,7 +7,7 @@
 static j65_state state;
 
 static void callback (void *ctx, j65_state *s, uint8_t event) {
-    printf ("    Got event %u ($%02X)", event, event);
+    printf ("    Got event %u", event);
     if (event == J65_INTEGER) {
         printf (" with integer %ld", j65_get_integer(s));
     }
@@ -22,12 +22,12 @@ static void callback (void *ctx, j65_state *s, uint8_t event) {
 }
 
 static void test (char *str) {
-    uint8_t ret;
+    int8_t ret;
 
     printf ("Testing '%s'\n", str);
     j65_init(&state);
     ret = j65_parse(NULL, callback, &state, str, strlen(str));
-    printf ("Return value %u\n\n", ret);
+    printf ("Return value %d\n\n", ret);
 }
 
 int main (int argc, char **argv) {
