@@ -13,6 +13,7 @@
         .export _j65_parse
         .export _j65_get_string
         .export _j65_get_length
+        .export _j65_get_long
 
 ;; zero page locations
         state     = regbank
@@ -105,6 +106,7 @@
 ;; state variables
 .struct st
         file_pos   .dword
+        long_val   .dword
         lexer_st   .byte
         parser_st  .byte
         parser_st2 .byte
@@ -1376,6 +1378,18 @@ do_callback:
 integer:
         jsr parse_signed_integer
         bcs not_integer
+        ldy #st::long_val       ; copy long1 to long_val
+        lda long1
+        sta (state),y
+        iny
+        lda long1+1
+        sta (state),y
+        iny
+        lda long1+2
+        sta (state),y
+        iny
+        lda long1+3
+        sta (state),y
         lda #J65_INTEGER
         jmp do_callback
 not_integer:
@@ -1458,3 +1472,21 @@ stack_empty:
         ldx #0
         rts
 .endproc                ; _j65_get_length
+
+;; long __fastcall__ j65_get_long(const j65_state *s);
+.proc _j65_get_long
+        sta ptr1
+        stx ptr1+1
+        ldy #st::long_val+3
+        lda (ptr1),y
+        sta sreg+1
+        dey
+        lda (ptr1),y
+        sta sreg
+        dey
+        lda (ptr1),y
+        tax
+        dey
+        lda (ptr1),y
+        rts
+.endproc                ; _j65_get_long

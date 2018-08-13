@@ -9,13 +9,14 @@ static j65_state state;
 static void callback (void *ctx, j65_state *s, uint8_t event, int32_t data) {
     printf ("    Got event %u ($%02X)", event, event);
     if (event == J65_INTEGER || event >= J65_ILLEGAL_CHAR) {
-        printf (" with long %ld\n", data);
-    } else if (event == J65_NUMBER || event == J65_STRING || event == J65_KEY) {
-        printf (" with string '%s' of length %u\n",
-                j65_get_string(s), j65_get_length(s));
-    } else {
-        printf ("\n");
+        printf (" with long %ld", j65_get_long(s));
     }
+    if (event == J65_INTEGER || event == J65_NUMBER ||
+        event == J65_STRING  || event == J65_KEY) {
+        printf (" with string '%s' of length %u",
+                j65_get_string(s), j65_get_length(s));
+    }
+    printf ("\n");
 }
 
 static void test (char *str) {

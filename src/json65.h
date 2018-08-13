@@ -59,4 +59,6 @@ const char * __fastcall__ j65_get_string(const j65_state *s);
 
 size_t __fastcall__ j65_get_length(const j65_state *s);
 
+long __fastcall__ j65_get_long(const j65_state *s);
+
 #endif  /* J65_H */
