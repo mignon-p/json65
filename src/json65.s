@@ -5,6 +5,7 @@
         .import callptr4
         .import decsp4
         .import incsp4
+        .import incsp6
         .import negeax
         .import resteax
         .import saveeax
@@ -108,6 +109,8 @@
 
 ;; state variables
 .struct st
+        callback   .word        ; these two must be first and in this order
+        context    .word
         file_off   .dword
         line_off   .dword
         line_num   .dword
@@ -164,32 +167,45 @@
 
         .code
 
-;; void __fastcall__ j65_init(j65_state *s);
+;; void __fastcall__ j65_init(j65_state *s, void *ctx, j65_callback cb, uint8_t max_depth);
 .proc _j65_init
-        pha
+        sta tmp1                ; save max_depth
         lda state               ; save first 2 bytes of regbank
         sta ptr1
         lda state+1
         sta ptr1+1
-        pla
+
+        ldy #4                  ; get state pointer off stack
+        lda (sp),y
         sta state
-        stx state+1
-        ldy #.sizeof(st) - 1
+        iny
+        lda (sp),y
+        sta state+1
+
+        ldy #.sizeof(st) - 1    ; clear state variables to 0
         lda #0
 loop:   sta (state),y
         dey
         bpl loop
+
         lda #par_done
         putstate st::parser_st2
         lda #$ff
         putstate st::stack_idx
-        lda #.sizeof(st)
+        lda #.sizeof(st)        ; TODO: use max depth in tmp1
         putstate st::stack_min
+
+        ldy #3                  ; copy callback and context from stack to state
+loop1:  lda (sp),y
+        sta (state),y
+        dey
+        bpl loop1
+
         lda ptr1                ; restore first 2 bytes of regbank
         sta state
         lda ptr1+1
         sta state+1
-        rts
+        jmp incsp6              ; tail call to remove args from stack
 .endproc                ; _j65_init
 
 ;; int8_t __fastcall__ j65_parse(void *ctx, j65_callback cb,

@@ -26,7 +26,7 @@ static void test (char *str) {
     int8_t ret;
 
     printf ("Testing '%s'\n", str);
-    j65_init(&state);
+    j65_init(&state, NULL, callback, 255);
     ret = j65_parse(NULL, callback, &state, str, strlen(str));
     printf ("Return value %d\n\n", ret);
 }

@@ -41,7 +41,7 @@ typedef struct {
 
 typedef int8_t __fastcall__ (*j65_callback)(void *ctx, j65_state *s, uint8_t event);
 
-void __fastcall__ j65_init(j65_state *s);
+void __fastcall__ j65_init(j65_state *s, void *ctx, j65_callback cb, uint8_t max_depth);
 
 int8_t __fastcall__ j65_parse(void *ctx, j65_callback cb, j65_state *s, const char *buf, size_t len);
 
