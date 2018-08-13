@@ -212,8 +212,7 @@ loop1:  lda (sp),y
         jmp incsp6              ; tail call to remove args from stack
 .endproc                ; _j65_init
 
-;; int8_t __fastcall__ j65_parse(void *ctx, j65_callback cb,
-;;     j65_state *s, const char *buf, size_t len)
+;; int8_t __fastcall__ j65_parse(j65_state *s, const char *buf, size_t len)
 .proc _j65_parse
         sta jlen
         stx jlen+1
@@ -265,8 +264,7 @@ leftovers:                      ; hi byte of jlen is zero
         tax
         pla
         jsr add_a_plus_1_to_file_off
-done:   jsr incsp4              ; pop ctx and cb off of C stack
-        restore_regbank         ; restore regbank off of 6502 stack
+done:   restore_regbank         ; restore regbank off of 6502 stack
         txa                     ; return value
         signextend
         rts
@@ -442,7 +440,6 @@ charprops:
 .endproc                ; getchar
 
 ;; state, strbuf, inbuf, and inbuflast should be set up upon entry.
-;; stack should contain context and callback.
 ;; returns status in a.
 .proc parse
         lda #0

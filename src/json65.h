@@ -43,7 +43,7 @@ typedef int8_t __fastcall__ (*j65_callback)(j65_state *s, uint8_t event);
 
 void __fastcall__ j65_init(j65_state *s, void *ctx, j65_callback cb, uint8_t max_depth);
 
-int8_t __fastcall__ j65_parse(void *ctx, j65_callback cb, j65_state *s, const char *buf, size_t len);
+int8_t __fastcall__ j65_parse(j65_state *s, const char *buf, size_t len);
 
 const char * __fastcall__ j65_get_string(const j65_state *s);
 size_t __fastcall__ j65_get_length(const j65_state *s);
