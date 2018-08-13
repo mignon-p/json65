@@ -26,8 +26,8 @@
         charidx   = tmp3         ; position in inbuf
         evtype    = tmp2         ; only used as an argument to call_callback
         esc_code  = tmp2         ; only used as an argument to lookup_escape
-        tmp0      = sreg
-        tmp5      = sreg+1
+        tmp5      = sreg
+        tmp6      = sreg+1
         long1     = regsave
         long2     = ptr1
 ;; zero page locations (for _j65_parse)
@@ -897,11 +897,11 @@ loop:   cpy tmp2
         iny
         cmp #$5c                ; backslash
         beq escape
-loop1:  sty tmp0
+loop1:  sty tmp5
         ldy tmp1
         sta (strbuf),y
         inc tmp1
-        ldy tmp0
+        ldy tmp5
         jmp loop
 escape: cpy tmp2
         beq error
@@ -1050,7 +1050,7 @@ fail:   sec
 ;; (output index is in tmp1)
 ;; preserves y.
 .proc long1toutf8
-        sty tmp0
+        sty tmp5
         ldy tmp1
         lda long1+2
         bne len4
@@ -1117,7 +1117,7 @@ latin1: lda long1
         ldx #0                  ; length 1, already in the right format
 done:   jsr writeutf8
         sty tmp1
-        ldy tmp0
+        ldy tmp5
         rts
 .endproc                ; long1toutf8
 
@@ -1136,9 +1136,9 @@ done:   jsr writeutf8
 ;; shift the last 4-x bytes of long1 left by 2 bits.
 ;; clobbers a, x.  preserves y.
 .proc shift_left_by_2
-        stx tmp5
+        stx tmp6
         jsr shift_left_by_1
-        ldx tmp5
+        ldx tmp6
 shift_left_by_1:
         asl long1,x
 loop:   php
