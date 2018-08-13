@@ -192,7 +192,11 @@ loop:   sta (state),y
         putstate st::parser_st2
         lda #$ff
         putstate st::stack_idx
-        lda #.sizeof(st)        ; TODO: use max depth in tmp1
+        sub tmp1                ; subtract max depth from $ff
+        cmp #.sizeof(st)
+        bge depth_ok
+        lda #.sizeof(st)
+depth_ok:
         putstate st::stack_min
 
         ldy #3                  ; copy callback and context from stack to state
@@ -1593,3 +1597,25 @@ get_long:
         ldy #st::col_num+3
         jmp get_long
 .endproc                ; _j65_get_column_number
+
+;; uint8_t __fastcall__ j65_get_max_depth(const j65_state *s);
+.proc _j65_get_max_depth
+        ldy #st::stack_min
+        sta ptr1
+        stx ptr1+1
+        lda #$ff
+        sub (ptr1),y
+        rts
+.endproc                ; _j65_get_max_depth
+
+;; void * __fastcall__ j65_get_context(const j65_state *s);
+.proc _j65_get_context
+        ldy #st::context+1
+        sta ptr1
+        sta ptr1+1
+        lda (ptr1),y
+        tax
+        dey
+        lda (ptr1),y
+        rts
+.endproc                ; _j65_get_context

@@ -54,4 +54,7 @@ uint32_t __fastcall__ j65_get_line_offset(const j65_state *s);
 uint32_t __fastcall__ j65_get_line_number(const j65_state *s);
 uint32_t __fastcall__ j65_get_column_number(const j65_state *s);
 
+uint8_t __fastcall__ j65_get_max_depth(const j65_state *s);
+void * __fastcall__ j65_get_context(const j65_state *s);
+
 #endif  /* J65_H */
