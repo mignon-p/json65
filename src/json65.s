@@ -743,7 +743,6 @@ literal_errors:                 ; needs to match parser state enum
 
 .endproc                ; parse
 
-;; "data" argument is in regsave.  (now unused)
 ;; event type is in evtype.
 ;; context and callback are on stack.
 ;; clobbers all regs.
@@ -868,7 +867,6 @@ skipescape:
         sec
         rts                     ; error exit
 p_ready:
-        jsr string_in_regsave
         lda #J65_STRING
         sta evtype
         jsr call_callback
@@ -876,8 +874,7 @@ p_ready:
         putstate st::parser_st
         clc
         rts                     ; success exit
-p_key:  jsr string_in_regsave
-        lda #J65_KEY
+p_key:  lda #J65_KEY
         sta evtype
         jsr call_callback
         lda #par_need_colon
@@ -885,21 +882,6 @@ p_key:  jsr string_in_regsave
         clc
         rts                     ; success exit
 .endproc                ; handle_string
-
-;; put string length in first two bytes of regsave
-;; and string pointer in second two bytes of regsave.
-;; clobbers a and y.
-.proc string_in_regsave
-        getstate st::str_idx
-        sta regsave
-        lda #0
-        sta regsave+1
-        lda strbuf
-        sta regsave+2
-        lda strbuf+1
-        sta regsave+3
-        rts
-.endproc                ; string_in_regsave
 
 ;; unescape \\ and \u in the string buffer.
 ;; returns carry set on error.  clear on success.
@@ -1430,8 +1412,7 @@ p_ready:
         bne keyword
         bit flags_prop_int
         bne integer
-number: jsr string_in_regsave
-        lda #J65_NUMBER
+number: lda #J65_NUMBER
 do_callback:
         sta evtype
         jsr call_callback
