@@ -3,7 +3,7 @@
 
 ;; routines from the cc65 runtime library
         .import callptr4
-        .import decsp5
+        .import decsp4
         .import incsp4
         .import negeax
         .import resteax
@@ -732,7 +732,7 @@ literal_errors:                 ; needs to match parser state enum
 
 .endproc                ; parse
 
-;; "data" argument is in regsave.
+;; "data" argument is in regsave.  (now unused)
 ;; event type is in evtype.
 ;; context and callback are on stack.
 ;; clobbers all regs.
@@ -741,8 +741,8 @@ literal_errors:                 ; needs to match parser state enum
         pha
         lda charidx
         pha
-        jsr decsp5              ; make room for 5 bytes of arguments
-        ldy #8
+        jsr decsp4              ; make room for 4 bytes of arguments
+        ldy #7
         lda (sp),y              ; context hi
         tax
         dey
@@ -766,10 +766,8 @@ literal_errors:                 ; needs to match parser state enum
         lda state
         dey
         sta (sp),y              ; state lo
-        lda evtype
-        dey
-        sta (sp),y              ; event type
-        jsr resteax             ; regsave becomes "data" argument
+        lda evtype              ; event type in ax
+        ldx #0
         jsr callptr4            ; call the C callback function (in ptr4)
         pla                     ; restore caller-save regs
         sta charidx
