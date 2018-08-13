@@ -6,7 +6,7 @@
 
 static j65_state state;
 
-static void callback (void *ctx, j65_state *s, uint8_t event) {
+static int8_t callback (void *ctx, j65_state *s, uint8_t event) {
     printf ("    Got event %u", event);
     if (event == J65_INTEGER) {
         printf (" with integer %ld", j65_get_integer(s));
@@ -19,6 +19,7 @@ static void callback (void *ctx, j65_state *s, uint8_t event) {
     printf (" at %lu:%lu\n",
             j65_get_line_number(s) + 1,
             j65_get_column_number(s) + 1);
+    return 0;
 }
 
 static void test (char *str) {

@@ -626,6 +626,11 @@ disp_exp_obj_end:
 disp_exp_array_end:
         lda #J65_EXPECTED_ARRAY_END
 error2: rts                     ; error exit
+pop_and_error:
+        tax
+        pla
+        txa
+        rts                     ; error exit
 disp_start_obj:
         ldx #J65_START_OBJ
         lda #0                  ; index into close_states
@@ -633,6 +638,7 @@ descend:
         pha
         stx evtype
         jsr call_callback
+        bcs pop_and_error
         getstate st::parser_st2
         jsr push_state_stack
         pla
@@ -774,10 +780,14 @@ literal_errors:                 ; needs to match parser state enum
         lda evtype              ; event type in ax
         ldx #0
         jsr callptr4            ; call the C callback function (in ptr4)
+        tax                     ; save return value
         pla                     ; restore caller-save regs
         sta charidx
         pla
         sta inbuflast
+        txa
+        asl                     ; set carry if return value is negative
+        txa                     ; get return value back into a
         rts                     ; end of subroutine
 .endproc                ; call_callback
 

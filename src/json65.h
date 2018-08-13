@@ -39,7 +39,7 @@ typedef struct {
     uint8_t dummy[512];
 } j65_state;
 
-typedef void __fastcall__ (*j65_callback)(void *ctx, j65_state *s, uint8_t event);
+typedef int8_t __fastcall__ (*j65_callback)(void *ctx, j65_state *s, uint8_t event);
 
 void __fastcall__ j65_init(j65_state *s);
 
