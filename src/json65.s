@@ -13,7 +13,7 @@
         .export _j65_parse
         .export _j65_get_string
         .export _j65_get_length
-        .export _j65_get_long
+        .export _j65_get_integer
         .export _j65_get_line_offset
         .export _j65_get_line_number
         .export _j65_get_column_number
@@ -1546,8 +1546,8 @@ done:   rts
         rts
 .endproc                ; _j65_get_length
 
-;; long __fastcall__ j65_get_long(const j65_state *s);
-_j65_get_long:
+;; int32_t __fastcall__ j65_get_integer(const j65_state *s);
+_j65_get_integer:
         ldy #st::long_val+3
 ;; copies the value at ax+y-3 thru ax+y to eax
 get_long:

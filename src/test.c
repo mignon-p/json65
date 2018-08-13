@@ -8,8 +8,8 @@ static j65_state state;
 
 static void callback (void *ctx, j65_state *s, uint8_t event, int32_t data) {
     printf ("    Got event %u ($%02X)", event, event);
-    if (event == J65_INTEGER || event >= J65_ILLEGAL_CHAR) {
-        printf (" with long %ld", j65_get_long(s));
+    if (event == J65_INTEGER) {
+        printf (" with integer %ld", j65_get_integer(s));
     }
     if (event == J65_INTEGER || event == J65_NUMBER ||
         event == J65_STRING  || event == J65_KEY) {
