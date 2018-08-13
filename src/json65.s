@@ -105,7 +105,7 @@
 
 ;; state variables
 .struct st
-        file_pos   .dword
+        file_off   .dword
         long_val   .dword
         lexer_st   .byte
         parser_st  .byte
@@ -205,8 +205,8 @@ loop:   lda jlen+1
         sta inbuflast
         jsr parse
         tax
-        lda #$ff                ; increment file_pos by 256
-        jsr add_a_plus_1_to_file_pos
+        lda #$ff                ; increment file_off by 256
+        jsr add_a_plus_1_to_file_off
         pla                     ; restore jlen off 6502 stack
         sta jlen
         pla
@@ -226,7 +226,7 @@ leftovers:                      ; hi byte of jlen is zero
         jsr parse
         tax
         pla
-        jsr add_a_plus_1_to_file_pos
+        jsr add_a_plus_1_to_file_off
 done:   jsr incsp4              ; pop ctx and cb off of C stack
         restore_regbank         ; restore regbank off of 6502 stack
         txa                     ; return value
@@ -234,27 +234,27 @@ done:   jsr incsp4              ; pop ctx and cb off of C stack
         rts
 .endproc                ; _j65_parse
 
-;; adds a plus 1 to file_pos.
+;; adds a plus 1 to file_off.
 ;; clobbers a and y.  preserves x.
-.proc add_a_plus_1_to_file_pos
-        ldy #st::file_pos
+.proc add_a_plus_1_to_file_off
+        ldy #st::file_off
         sec
-        adc (state),y           ; file_pos
+        adc (state),y           ; file_off
         sta (state),y
         iny
-        lda (state),y           ; file_pos+1
+        lda (state),y           ; file_off+1
         adc #0
         sta (state),y
         iny
-        lda (state),y           ; file_pos+2
+        lda (state),y           ; file_off+2
         adc #0
         sta (state),y
         iny
-        lda (state),y           ; file_pos+3
+        lda (state),y           ; file_off+3
         adc #0
         sta (state),y
         rts
-.endproc                ; add_a_plus_1_to_file_pos
+.endproc                ; add_a_plus_1_to_file_off
 
 ;; x will contain character, and a will contain character properties
 ;; on exit. clobbers y.
@@ -727,11 +727,11 @@ literal_errors:                 ; needs to match parser state enum
         rts                     ; end of subroutine
 .endproc                ; call_callback
 
-;; add charidx to file_pos and store result in regsave.
+;; add charidx to file_off and store result in regsave.
 ;; clobbers a, x, y.
 .proc make_byte_offset
         lda charidx
-        ldy #st::file_pos
+        ldy #st::file_off
         add (state),y
         sta regsave
         lda #0
