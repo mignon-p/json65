@@ -3,10 +3,10 @@
 
 ;; routines from the cc65 runtime library
         .import callptr4
-        .import decsp2
         .import incsp4
         .import incsp6
         .import negeax
+        .import pushax
         .import resteax
         .import saveeax
 
@@ -771,28 +771,22 @@ literal_errors:                 ; needs to match parser state enum
         pha
         lda charidx
         pha
-        jsr decsp2              ; make room for 2 bytes of arguments
-        ldy #5
-        lda (sp),y              ; context hi
-        tax
-        dey
-        lda (sp),y              ; context lo
-        sta tmp1
-        dey
-        lda (sp),y              ; callback hi
-        sta ptr4+1
-        dey
-        lda (sp),y              ; callback lo
+
+        ldy #st::callback       ; get callback into ptr4
+        lda (state),y
         sta ptr4
-        lda state+1
-        dey
-        sta (sp),y              ; state hi
-        lda state
-        dey
-        sta (sp),y              ; state lo
+        iny
+        lda (state),y
+        sta ptr4+1
+
+        lda state               ; state ptr is passed on stack
+        ldx state+1
+        jsr pushax
+
         lda evtype              ; event type in ax
         ldx #0
         jsr callptr4            ; call the C callback function (in ptr4)
+
         tax                     ; save return value
         pla                     ; restore caller-save regs
         sta charidx
