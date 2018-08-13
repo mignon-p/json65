@@ -16,7 +16,9 @@ static void callback (void *ctx, j65_state *s, uint8_t event, int32_t data) {
         printf (" with string '%s' of length %u",
                 j65_get_string(s), j65_get_length(s));
     }
-    printf ("\n");
+    printf (" at %lu:%lu\n",
+            j65_get_line_number(s) + 1,
+            j65_get_column_number(s) + 1);
 }
 
 static void test (char *str) {

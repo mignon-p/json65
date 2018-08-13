@@ -20,7 +20,7 @@ JSON65 is fully reentrant, so you can incrementally parse several
 files at once if you so desire.
 
 JSON65 does have a couple of limits: strings are limited to 255 bytes,
-and the nesting depth (of nested arrays or objects) is limited to 245.
+and the nesting depth (of nested arrays or objects) is limited to 228.
 However, there is no limit on the length of a line, or the length of a
 file.
 

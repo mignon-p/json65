@@ -61,4 +61,8 @@ size_t __fastcall__ j65_get_length(const j65_state *s);
 
 long __fastcall__ j65_get_long(const j65_state *s);
 
+uint32_t __fastcall__ j65_get_line_offset(const j65_state *s);
+uint32_t __fastcall__ j65_get_line_number(const j65_state *s);
+uint32_t __fastcall__ j65_get_column_number(const j65_state *s);
+
 #endif  /* J65_H */

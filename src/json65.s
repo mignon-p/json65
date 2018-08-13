@@ -14,6 +14,9 @@
         .export _j65_get_string
         .export _j65_get_length
         .export _j65_get_long
+        .export _j65_get_line_offset
+        .export _j65_get_line_number
+        .export _j65_get_column_number
 
 ;; zero page locations
         state     = regbank
@@ -106,6 +109,9 @@
 ;; state variables
 .struct st
         file_off   .dword
+        line_off   .dword
+        line_num   .dword
+        col_num    .dword
         long_val   .dword
         lexer_st   .byte
         parser_st  .byte
@@ -114,6 +120,7 @@
         stack_idx  .byte
         flags      .byte
         stack_min  .byte
+        prev_char  .byte
 .endstruct
 
 ;; loads a with specified state variable.  clobbers y.
@@ -419,7 +426,7 @@ parseloop:
         rts                     ; jump table; not end of subroutine
 l_ready:
         jsr getchar
-        bmi jmp_nextchar        ; whitespace
+        bmi got_whitespace
         bit flags_prop_lit_or_num
         bne start_lit
         and #prop_sc
@@ -435,6 +442,44 @@ l_ready:
         lda dispatch_tab_l,y
         pha
         rts                     ; jump table; not end of subroutine
+got_whitespace:
+        cpx #$0d
+        beq got_newline
+        cpx #$0a
+        bne jmp_nextchar
+        getstate st::prev_char
+        cmp #$0d
+        beq got_newline1        ; ignore LF if preceded by CR
+got_newline:
+        ldy #st::line_num       ; increment line number
+        jsr inc_state_long
+got_newline1:
+        lda #0                  ; set column number to 0
+        ldy #st::col_num
+        sta (state),y
+        iny
+        sta (state),y
+        iny
+        sta (state),y
+        iny
+        sta (state),y
+        sec                     ; add 1 in make_byte_offset
+        jsr make_byte_offset    ; get file offset+1 into regsave
+        ldy #st::line_off       ; move regsave into line offset
+        lda regsave
+        sta (state),y
+        iny
+        lda regsave+1
+        sta (state),y
+        iny
+        lda regsave+2
+        sta (state),y
+        iny
+        lda regsave+3
+        sta (state),y
+        jmp nextchar1
+jmp_nextchar:
+        jmp nextchar
 start_lit:
         getstate st::parser_st
         tay
@@ -478,7 +523,6 @@ l_string:
 got_backslash:
         lda #lex_str_escape
         putstate st::lexer_st
-jmp_nextchar:
         jmp nextchar
 got_quote:
         jsr handle_string
@@ -529,6 +573,12 @@ putchar1:                       ; a contains char, y contains str_idx
         tya
         putstate st::str_idx
 nextchar:
+        ldy #st::col_num
+        jsr inc_state_long
+nextchar1:
+        ldy charidx
+        lda (inbuf),y
+        putstate st::prev_char
         getstate st::parser_st
         cmp #par_done
         beq done
@@ -545,6 +595,7 @@ done:   lda #J65_DONE
 strtoolong:
         lda #J65_STRING_TOO_LONG
 error:  sta evtype
+        clc
         jsr make_byte_offset    ; get byte offset in file into regsave
         jsr call_callback
         lda #J65_ERROR
@@ -727,12 +778,12 @@ literal_errors:                 ; needs to match parser state enum
         rts                     ; end of subroutine
 .endproc                ; call_callback
 
-;; add charidx to file_off and store result in regsave.
+;; add charidx plus carry flag to file_off and store result in regsave.
 ;; clobbers a, x, y.
 .proc make_byte_offset
         lda charidx
         ldy #st::file_off
-        add (state),y
+        adc (state),y
         sta regsave
         lda #0
         iny
@@ -1455,6 +1506,28 @@ stack_empty:
         rts
 .endproc                ; pop_state_stack
 
+;; increment the long at state+y to state+y+3 by 1.
+;; clobbers a and y.
+.proc inc_state_long
+        lda (state),y
+        add #1
+        sta (state),y
+        bcc done                ; short circuit for speed
+        iny
+        lda (state),y
+        adc #0
+        sta (state),y
+        iny
+        lda (state),y
+        adc #0
+        sta (state),y
+        iny
+        lda (state),y
+        adc #0
+        sta (state),y
+done:   rts
+.endproc                ; inc_state_long
+
 ;; const char * __fastcall__ j65_get_string(const j65_state *s);
 ;; (string buffer is the second 256 bytes of state, so all we have
 ;; to do is increment the high byte of the argument)
@@ -1474,10 +1547,12 @@ stack_empty:
 .endproc                ; _j65_get_length
 
 ;; long __fastcall__ j65_get_long(const j65_state *s);
-.proc _j65_get_long
+_j65_get_long:
+        ldy #st::long_val+3
+;; copies the value at ax+y-3 thru ax+y to eax
+get_long:
         sta ptr1
         stx ptr1+1
-        ldy #st::long_val+3
         lda (ptr1),y
         sta sreg+1
         dey
@@ -1489,4 +1564,22 @@ stack_empty:
         dey
         lda (ptr1),y
         rts
-.endproc                ; _j65_get_long
+        ; end _j65_get_long
+
+;; uint32_t __fastcall__ j65_get_line_offset(const j65_state *s);
+.proc _j65_get_line_offset
+        ldy #st::line_off+3
+        jmp get_long
+.endproc                ; _j65_get_line_offset
+
+;; uint32_t __fastcall__ j65_get_line_number(const j65_state *s);
+.proc _j65_get_line_number
+        ldy #st::line_num+3
+        jmp get_long
+.endproc                ; _j65_get_line_number
+
+;; uint32_t __fastcall__ j65_get_column_number(const j65_state *s);
+.proc _j65_get_column_number
+        ldy #st::col_num+3
+        jmp get_long
+.endproc                ; _j65_get_column_number
