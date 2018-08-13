@@ -495,7 +495,7 @@ start_lit:
         getstate st::parser_st
         tay
         lda literal_errors,y
-        bne jmp_error
+        bne error
         lda #prop_lit | prop_int | prop_num
         putstate st::flags
         lda #0
@@ -515,7 +515,7 @@ l_literal:
         sta (strbuf),y          ; null-terminate string
         txa
         jsr handle_literal
-        bcs jmp_error
+        bcs error
         lda #lex_ready
         putstate st::lexer_st
         jmp parseloop           ; process the same character again
@@ -537,14 +537,13 @@ got_backslash:
         jmp nextchar
 got_quote:
         jsr handle_string
-        bcs jmp_error
+        bcs error
         lda #lex_ready
         putstate st::lexer_st
         jmp nextchar
 illegal_char:
         lda #J65_ILLEGAL_CHAR
-jmp_error:
-        jmp error
+error:  rts                     ; error exit
 l_str_escape:
         lda #lex_string
         putstate st::lexer_st
@@ -561,7 +560,7 @@ l_str_escape:
         jmp putchar
 illegal_escape:
         lda #J65_ILLEGAL_ESCAPE
-        jmp error
+        rts                     ; error exit
 escape_later:
         lda #1
         putstate st::flags      ; flag indicating we need a later escape pass
@@ -600,35 +599,33 @@ nextchar1:
         jmp parseloop
 wantmore:
         lda #J65_WANT_MORE
-        ldx #0
         rts                     ; end of subroutine
 done:   lda #J65_DONE
-        ldx #0
         rts                     ; end of subroutine
 strtoolong:
         lda #J65_STRING_TOO_LONG
-error:  rts                     ; end of subroutine
+        rts                     ; error exit
 disp_illegal_char:
         lda #J65_ILLEGAL_CHAR
-        jmp error
+        rts                     ; error exit
 disp_parse_error:
         lda #J65_PARSE_ERROR
-        jmp error
+        rts                     ; error exit
 disp_exp_string:
         lda #J65_EXPECTED_STRING
-        jmp error
+        rts                     ; error exit
 disp_exp_colon:
         lda #J65_EXPECTED_COLON
-        jmp error
+        rts                     ; error exit
 disp_exp_comma:
         lda #J65_EXPECTED_COMMA
-        jmp error
+        rts                     ; error exit
 disp_exp_obj_end:
         lda #J65_EXPECTED_OBJ_END
-        jmp error
+        rts                     ; error exit
 disp_exp_array_end:
         lda #J65_EXPECTED_ARRAY_END
-        jmp error
+error2: rts                     ; error exit
 disp_start_obj:
         ldx #J65_START_OBJ
         lda #0                  ; index into close_states
@@ -639,7 +636,7 @@ descend:
         getstate st::parser_st2
         jsr push_state_stack
         pla
-        bcs error
+        bcs error2
         tax
         lda close_states,x
         putstate st::parser_st
@@ -651,7 +648,7 @@ disp_end_obj:
 ascend: sta evtype
         jsr call_callback
         jsr pop_state_stack
-        bcs error
+        bcs error2
         putstate st::parser_st
         putstate st::parser_st2
         jmp nextchar
