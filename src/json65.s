@@ -952,6 +952,7 @@ check_surrogate:
         tya
         sub #1
         pha
+        iny
         jsr read4hexintosreg
         bcs bmp1
         jsr is_sreg_right_surrogate
