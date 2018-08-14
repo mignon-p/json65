@@ -1232,11 +1232,8 @@ yes:    sec
 ;; on success, carry clear and result in long1 (regsave).
 ;; on integer overflow, carry set and overflow set.
 ;; on illegal character, carry set and overflow clear.
-;; clobbers a and x, preserves y.
-;; FIXME: might not need to preserve y?
+;; clobbers a, x, and y.
 .proc parse_signed_integer
-        tya
-        pha
         ldy #0
         lda (strbuf),y
         cmp #'-'
@@ -1248,8 +1245,7 @@ yes:    sec
 not_okay:
         sec                     ; otherwise, set carry and overflow
         bit an_rts
-done:   pla
-        tay
+done:
 an_rts: rts
 negative:
         iny
@@ -1274,7 +1270,7 @@ okay:   jsr resteax
 ;; on success, carry clear and result in long1 (regsave).
 ;; on integer overflow, carry set and overflow set.
 ;; on illegal character, carry set and overflow clear.
-;; clobbers a, x, and y.  FIXME: doesn't seem to actually clobber x?
+;; clobbers a and y.  preserves x.
 .proc parse_unsigned_integer
         lda #0
         sta long1
