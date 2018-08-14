@@ -1,6 +1,5 @@
         .macpack generic
         .include "zeropage.inc"
-        .include "debug.inc"
 
 ;; routines from the cc65 runtime library
         .import callptr4
@@ -1072,7 +1071,7 @@ fail:   sec
         cmp #8
         bge len3
 len2:   ldx #1
-        jsr shift_left_by_2
+        jsr utf8_shift
         lda long1
         and #%00111111
         ora #%10000000
@@ -1084,9 +1083,9 @@ len2:   ldx #1
         ldx #1
         jmp done
 len3:   ldx #1
-        jsr shift_left_by_2
+        jsr utf8_shift
         ldx #2
-        jsr shift_left_by_2
+        jsr utf8_shift
         lda long1
         and #%00111111
         ora #%10000000
@@ -1102,11 +1101,11 @@ len3:   ldx #1
         ldx #2
         jmp done
 len4:   ldx #1
-        jsr shift_left_by_2
+        jsr utf8_shift
         ldx #2
-        jsr shift_left_by_2
+        jsr utf8_shift
         ldx #3
-        jsr shift_left_by_2
+        jsr utf8_shift
         lda long1
         and #%00111111
         ora #%10000000
@@ -1139,12 +1138,10 @@ done:   jsr writeutf8
 ;; clobbers a, x.
 .proc writeutf8
         lda long1,x
-        print_hex
         sta (strbuf),y
         iny
         dex
         bpl writeutf8
-        print_nl
         rts
 .endproc                ; writeutf8
 
@@ -1166,6 +1163,21 @@ loop:   php
 done:   plp
         rts
 .endproc                ; shift_left_by_2
+
+;; shift the last 4-x bytes of long1 left by 2 bits.
+;; shifts in the top two bits from the previous byte, too.
+;; clobbers a, x.  preserves y.
+.proc utf8_shift
+        dex
+        txa
+        pha
+        jsr shift_left_by_2
+        pla
+        tax
+        lsr long1,x
+        lsr long1,x
+        rts
+.endproc                ; fancy_shift
 
 ;; preserves y.
 ;; sets carry if sreg is a left surrogate.
