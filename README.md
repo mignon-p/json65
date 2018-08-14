@@ -20,7 +20,7 @@ JSON65 is fully reentrant, so you can incrementally parse several
 files at once if you so desire.
 
 JSON65 does have a couple of limits: strings are limited to 255 bytes,
-and the nesting depth (of nested arrays or objects) is limited to 228.
+and the nesting depth (of nested arrays or objects) is limited to 224.
 However, there is no limit on the length of a line, or the length of a
 file.
 
@@ -42,7 +42,8 @@ escapes will be translated into the proper UTF-8.
 
 Because JSON only allows newlines in places where arbitrary whitespace
 is allowed, JSON65 is agnostic to the type of line ending.  (CR, LF,
-or CRLF.)
+or CRLF.)  For the purposes of counting line numbers for error
+reporting, JSON65 handles CR, LF, or CRLF line endings.
 
 JSON65 will parse numbers which fit into a 32-bit signed long, and
 will provide the long to the callback.  All other numbers

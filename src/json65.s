@@ -1535,7 +1535,7 @@ done:   rts
         rts
 .endproc                ; _j65_get_string
 
-;; size_t __fastcall__ j65_get_length(const j65_state *s);
+;; uint8_t __fastcall__ j65_get_length(const j65_state *s);
 .proc _j65_get_length
         sta ptr1
         stx ptr1+1
