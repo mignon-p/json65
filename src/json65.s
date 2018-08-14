@@ -672,6 +672,7 @@ disp_end_obj:
         lda #J65_END_OBJ
 ascend: sta evtype
         jsr call_callback
+        bcs error2
         jsr pop_state_stack
         bcs error2
         putstate st::parser_st
@@ -763,7 +764,8 @@ literal_errors:                 ; needs to match parser state enum
 .endproc                ; parse
 
 ;; event type is in evtype.
-;; context and callback are on stack.
+;; Returns callback's return value in a.
+;; Sets carry if return value is negative.
 ;; clobbers all regs.
 .proc call_callback
         lda inbuflast           ; save caller-save regs
@@ -872,11 +874,12 @@ skipescape:
         beq p_key
         lda #J65_PARSE_ERROR
         sec
-        rts                     ; error exit
+error:  rts                     ; error exit
 p_ready:
         lda #J65_STRING
         sta evtype
         jsr call_callback
+        bcs error
         getstate st::parser_st2 ; get next parser state in a
         putstate st::parser_st
         clc
@@ -884,6 +887,7 @@ p_ready:
 p_key:  lda #J65_KEY
         sta evtype
         jsr call_callback
+        bcs error
         lda #par_need_colon
         putstate st::parser_st
         clc
@@ -1412,7 +1416,7 @@ done:   rts
 parse_err:
         lda #J65_PARSE_ERROR
         sec
-        rts                     ; error exit
+error:  rts                     ; error exit
 p_ready:
         txa
         bit flags_prop_lit
@@ -1423,6 +1427,7 @@ number: lda #J65_NUMBER
 do_callback:
         sta evtype
         jsr call_callback
+        bcs error
         getstate st::parser_st2 ; get next parser state in a
         putstate st::parser_st
         clc
