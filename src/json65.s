@@ -1599,7 +1599,7 @@ get_long:
 .proc _j65_get_context
         ldy #st::context+1
         sta ptr1
-        sta ptr1+1
+        stx ptr1+1
         lda (ptr1),y
         tax
         dey
