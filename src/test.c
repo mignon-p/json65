@@ -207,6 +207,47 @@ static const event_check test30[] = {
   { J65_NUMBER,            0, "-2147483649",          0 },
 };
 
+static const event_check test31[] = {
+  { J65_DONE, 31, "-4294967296 ", 0 },
+  { J65_NUMBER,            0, "-4294967296",          0 },
+};
+
+static const event_check test32[] = {
+  { J65_DONE, 32, "4294967296 ", 0 },
+  { J65_NUMBER,            0, "4294967296",           0 },
+};
+
+static const event_check test33[] = {
+  { J65_DONE, 33, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0 },
+  { J65_NUMBER, 0, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0 },
+};
+
+static const event_check test34[] = {
+  { J65_DONE, 34, "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0 },
+  { J65_NUMBER, 0, "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0 },
+};
+
+static const event_check test35[] = {
+  { J65_STRING_TOO_LONG, 35, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0 },
+};
+
+static const event_check test36[] = {
+  { J65_PARSE_ERROR, 36, "5-5 ", 0 },
+};
+
+static const event_check test37[] = {
+  { J65_ILLEGAL_CHAR, 37, "0x2000 ", 0 },
+  { J65_INTEGER,       0, "0",       0 },
+};
+
+static const event_check test38[] = {
+  { J65_ILLEGAL_CHAR, 38, "barf ", 0 },
+};
+
+static const event_check test39[] = {
+  { J65_PARSE_ERROR,  39, "nue ", 0 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -384,6 +425,15 @@ int main (int argc, char **argv) {
     TEST(test28);
     TEST(test29);
     TEST(test30);
+    TEST(test31);
+    TEST(test32);
+    TEST(test33);
+    TEST(test34);
+    TEST(test35);
+    TEST(test36);
+    TEST(test37);
+    TEST(test38);
+    TEST(test39);
 
     printf ("%d tests passed; %d tests failed\n", passes, failures);
 
