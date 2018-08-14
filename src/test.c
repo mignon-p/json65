@@ -182,6 +182,31 @@ static const event_check test25[] = {
     { J65_END_ARRAY,       0, NULL,              6 },
 };
 
+static const event_check test26[] = {
+  { J65_DONE, 26, "2147483647 ", 0 },
+  { J65_INTEGER,  2147483647, "2147483647",           0 },
+};
+
+static const event_check test27[] = {
+  { J65_DONE, 27, "-2147483647 ", 0 },
+  { J65_INTEGER, -2147483647, "-2147483647",          0 },
+};
+
+static const event_check test28[] = {
+  { J65_DONE, 28, "2147483648 ", 0 },
+  { J65_NUMBER,            0, "2147483648",           0 },
+};
+
+static const event_check test29[] = {
+  { J65_DONE, 29, "-2147483648 ", 0 },
+  { J65_INTEGER, -2147483648, "-2147483648",          0 },
+};
+
+static const event_check test30[] = {
+  { J65_DONE, 30, "-2147483649 ", 0 },
+  { J65_NUMBER,            0, "-2147483649",          0 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -354,6 +379,11 @@ int main (int argc, char **argv) {
     TEST(test23);
     TEST(test24);
     TEST(test25);
+    TEST(test26);
+    TEST(test27);
+    TEST(test28);
+    TEST(test29);
+    TEST(test30);
 
     printf ("%d tests passed; %d tests failed\n", passes, failures);
 
