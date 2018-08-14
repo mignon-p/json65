@@ -105,8 +105,38 @@ static const event_check test12[] = {
 };
 
 static const event_check test13[] = {
-    { J65_DONE, 13, "\n\"slash \\/ tab \\t\"", 1},
+    { J65_DONE, 13, "\n\"slash \\/ tab \\t\"", 1 },
     { J65_STRING,          0, "slash / tab \t", 1 },
+};
+
+static const event_check test14[] = {
+    { J65_DONE, 14, "\"slash \\/ backslash \\\\ tab \\t\"", 0 },
+    { J65_STRING,          0, "slash / backslash \\ tab \t", 0 },
+};
+
+static const event_check test15[] = {
+    { J65_DONE, 15, "\"have \\u0061 nice day\"", 0 },
+    { J65_STRING,          0, "have a nice day", 0 },
+};
+
+static const event_check test16[] = {
+    { J65_DONE, 16, "\"have \\u0061\\u0020nice day\"", 0 },
+    { J65_STRING,          0, "have a nice day", 0 },
+};
+
+static const event_check test17[] = {
+    { J65_DONE, 17, "\"have \\u0061\\\\nice day\"", 0 },
+    { J65_STRING,          0, "have a\\nice day", 0 },
+};
+
+static const event_check test18[] = {
+    { J65_DONE, 18, "\"this \\uD834\\uDD1E is a G clef\"", 0 },
+    { J65_STRING,          0, "this 𝄞 is a G clef", 0 },
+};
+
+static const event_check test19[] = {
+    { J65_DONE, 19, "\"\\u00a9 2018\"", 0 },
+    { J65_STRING,          0, "© 2018", 0 },
 };
 
 static const char *event_name (uint8_t event) {
@@ -269,6 +299,12 @@ int main (int argc, char **argv) {
     TEST(test11);
     TEST(test12);
     TEST(test13);
+    TEST(test14);
+    TEST(test15);
+    TEST(test16);
+    TEST(test17);
+    TEST(test18);
+    TEST(test19);
 
     printf ("%d tests passed; %d tests failed\n", passes, failures);
 
