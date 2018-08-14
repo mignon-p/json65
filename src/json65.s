@@ -1242,6 +1242,7 @@ yes:    sec
         cmp #'-'
         beq negative
         jsr parse_unsigned_integer
+        bcs done                ; overflow of 32-bit int, C and V are set
         bit long1+3
         bpl done                ; if hi bit is clear, it is okay
 not_okay:
@@ -1253,7 +1254,7 @@ an_rts: rts
 negative:
         iny
         jsr parse_unsigned_integer
-        bcs done
+        bcs done                ; overflow of 32-bit int, C and V are set
         lda #$7f
         bit long1+3
         bpl okay                ; if hi bit is clear, it is okay
