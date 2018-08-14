@@ -1242,14 +1242,27 @@ yes:    sec
         cmp #'-'
         beq negative
         jsr parse_unsigned_integer
+        bit long1+3
+        bpl done                ; if hi bit is clear, it is okay
+not_okay:
+        sec                     ; otherwise, set carry and overflow
+        bit an_rts
 done:   pla
         tay
-        rts
+an_rts: rts
 negative:
         iny
         jsr parse_unsigned_integer
         bcs done
-        jsr resteax
+        lda #$7f
+        bit long1+3
+        bpl okay                ; if hi bit is clear, it is okay
+        bne not_okay            ; if hi byte is not $80, it is not okay
+        lda long1+2
+        ora long1+1
+        ora long1
+        bne not_okay            ; only okay if 3 least significant bytes are 0
+okay:   jsr resteax
         jsr negeax
         jsr saveeax
         clc
@@ -1257,8 +1270,6 @@ negative:
 .endproc                ; parse_signed_integer
 
 ;; parse unsigned integer in strbuf, starting at y.
-;; (although "unsigned", result greater than 0x7fffffff is considered
-;; an error.)
 ;; on success, carry clear and result in long1 (regsave).
 ;; on integer overflow, carry set and overflow set.
 ;; on illegal character, carry set and overflow clear.
@@ -1280,19 +1291,16 @@ loop:   tya
         jsr hex_dig_to_nibble
         bcs error
         jsr add_a_to_long1
-        bcs overflow
         iny
-        lda long1+3             ; overflow if we go over 0x7fffffff
-        bpl loop
+        bcc loop
 overflow:
         bit an_rts              ; bit on an rts instruction will set overflow
-        sec
-an_rts: rts
+an_rts: rts                     ; carry and overflow are both set
 done:   clc
-        rts
+        rts                     ; success: carry clear
 error:  clv
         sec
-        rts
+        rts                     ; carry set, overflow clear
 .endproc                ; parse_unsigned_integer
 
 ;; multiplies long1 by 10. clobbers a and long2. preserves x y.
