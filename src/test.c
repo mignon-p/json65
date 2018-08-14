@@ -139,6 +139,11 @@ static const event_check test19[] = {
     { J65_STRING,          0, "© 2018", 0 },
 };
 
+static const event_check test20[] = {
+    { J65_DONE, 20, "\"cents \\u00a2 Euros \\u20ac\"", 0 },
+    { J65_STRING,          0, "cents ¢ Euros €", 0 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -305,6 +310,7 @@ int main (int argc, char **argv) {
     TEST(test17);
     TEST(test18);
     TEST(test19);
+    TEST(test20);
 
     printf ("%d tests passed; %d tests failed\n", passes, failures);
 
