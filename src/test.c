@@ -4,21 +4,21 @@
 #include <string.h>
 #include <json65.h>
 
-static j65_state state;
+static j65_parser state;
 
-static int8_t callback (j65_state *s, uint8_t event) {
+static int8_t callback (j65_parser *p, uint8_t event) {
     printf ("    Got event %u", event);
     if (event == J65_INTEGER) {
-        printf (" with integer %ld", j65_get_integer(s));
+        printf (" with integer %ld", j65_get_integer(p));
     }
     if (event == J65_INTEGER || event == J65_NUMBER ||
         event == J65_STRING  || event == J65_KEY) {
         printf (" with string '%s' of length %u",
-                j65_get_string(s), j65_get_length(s));
+                j65_get_string(p), j65_get_length(p));
     }
     printf (" at %lu:%lu\n",
-            j65_get_line_number(s) + 1,
-            j65_get_column_number(s) + 1);
+            j65_get_line_number(p) + 1,
+            j65_get_column_number(p) + 1);
     return 0;
 }
 

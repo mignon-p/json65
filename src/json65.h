@@ -37,24 +37,24 @@ enum j65_status {
 
 typedef struct {
     uint8_t dummy[512];
-} j65_state;
+} j65_parser;
 
-typedef int8_t __fastcall__ (*j65_callback)(j65_state *s, uint8_t event);
+typedef int8_t __fastcall__ (*j65_callback)(j65_parser *p, uint8_t event);
 
-void __fastcall__ j65_init(j65_state *s, void *ctx, j65_callback cb, uint8_t max_depth);
+void __fastcall__ j65_init(j65_parser *p, void *ctx, j65_callback cb, uint8_t max_depth);
 
-int8_t __fastcall__ j65_parse(j65_state *s, const char *buf, size_t len);
+int8_t __fastcall__ j65_parse(j65_parser *p, const char *buf, size_t len);
 
-const char * __fastcall__ j65_get_string(const j65_state *s);
-size_t __fastcall__ j65_get_length(const j65_state *s);
+const char * __fastcall__ j65_get_string(const j65_parser *p);
+size_t __fastcall__ j65_get_length(const j65_parser *p);
 
-int32_t __fastcall__ j65_get_integer(const j65_state *s);
+int32_t __fastcall__ j65_get_integer(const j65_parser *p);
 
-uint32_t __fastcall__ j65_get_line_offset(const j65_state *s);
-uint32_t __fastcall__ j65_get_line_number(const j65_state *s);
-uint32_t __fastcall__ j65_get_column_number(const j65_state *s);
+uint32_t __fastcall__ j65_get_line_offset(const j65_parser *p);
+uint32_t __fastcall__ j65_get_line_number(const j65_parser *p);
+uint32_t __fastcall__ j65_get_column_number(const j65_parser *p);
 
-uint8_t __fastcall__ j65_get_max_depth(const j65_state *s);
-void * __fastcall__ j65_get_context(const j65_state *s);
+uint8_t __fastcall__ j65_get_max_depth(const j65_parser *p);
+void * __fastcall__ j65_get_context(const j65_parser *p);
 
 #endif  /* J65_H */
