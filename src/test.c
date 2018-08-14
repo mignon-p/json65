@@ -301,7 +301,8 @@ static int8_t callback (j65_parser *p, uint8_t event) {
 
     if (ec->ev != event) {
         print_fail();
-        printf ("%u: Got %s but expected %s\n", pos, ename, event_name(ec->ev));
+        printf ("[%u] Got %s but expected %s\n",
+                pos, ename, event_name(ec->ev));
         return J65_USER_ERROR;
     }
 
@@ -309,7 +310,7 @@ static int8_t callback (j65_parser *p, uint8_t event) {
         i = j65_get_integer(p);
         if (i != ec->integer) {
             print_fail();
-            printf ("%u: Got %ld but expected %ld\n", pos, i, ec->integer);
+            printf ("[%u] Got %ld but expected %ld\n", pos, i, ec->integer);
             return J65_USER_ERROR;
         }
     }
@@ -322,14 +323,14 @@ static int8_t callback (j65_parser *p, uint8_t event) {
 
         if (len1 != len2) {
             print_fail();
-            printf ("%u: String length is %u but claimed to be %u\n",
+            printf ("[%u] String length is %u but claimed to be %u\n",
                     pos, len2, len1);
             return J65_USER_ERROR;
         }
 
         if (strcmp (str, ec->str) != 0) {
             print_fail();
-            printf ("%u: For %s, got '%s' but expected '%s'\n",
+            printf ("[%u] For %s, got '%s' but expected '%s'\n",
                     pos, ename, str, ec->str);
             return J65_USER_ERROR;
         }
@@ -338,7 +339,7 @@ static int8_t callback (j65_parser *p, uint8_t event) {
     line_no = j65_get_line_number(p);
     if (line_no != ec->line_no) {
         print_fail();
-        printf ("%u: For %s, got line %lu but expected %lu\n",
+        printf ("[%u] For %s, got line %lu but expected %lu\n",
                 pos, ename, line_no, ec->line_no);
         return J65_USER_ERROR;
     }
@@ -394,6 +395,8 @@ static void run_test (const event_check *events, size_t len) {
 #define TEST(x) run_test (x, sizeof(x) / sizeof(x[0]))
 
 int main (int argc, char **argv) {
+    int color;
+
     TEST(test00);
     TEST(test01);
     TEST(test02);
@@ -435,7 +438,14 @@ int main (int argc, char **argv) {
     TEST(test38);
     TEST(test39);
 
+    if (failures > 0)
+        color = 31;             /* red */
+    else
+        color = 32;             /* green */
+
+    printf ("\033[%dm================================\033[0m\n", color);
     printf ("%d tests passed; %d tests failed\n", passes, failures);
+    printf ("\033[%dm================================\033[0m\n", color);
 
     return failures;
 }
