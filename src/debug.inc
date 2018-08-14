@@ -76,6 +76,10 @@ S:      .asciiz str
         jsr debug_nl
 .endmacro               ; print_str_hex_nl
 
+.macro print_nl
+        jsr debug_nl
+.endmacro               ; print_nl
+
 .proc debug_str
         save_regs
         lda #<percent_s
