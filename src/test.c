@@ -144,6 +144,44 @@ static const event_check test20[] = {
     { J65_STRING,          0, "cents ¢ Euros €", 0 },
 };
 
+static const event_check test21[] = {
+    { J65_DONE, 21, "[\nnull\n,\nfalse\n,\ntrue\n]\n", 6 },
+    { J65_START_ARRAY,     0, NULL,              0 },
+    { J65_NULL,            0, NULL,              1 },
+    { J65_FALSE,           0, NULL,              3 },
+    { J65_TRUE,            0, NULL,              5 },
+    { J65_END_ARRAY,       0, NULL,              6 },
+};
+
+static const event_check test22[] = {
+    { J65_EXPECTED_STRING, 22, "{false: true} ", 0 },
+    { J65_START_OBJ,       0, NULL,              0 },
+};
+
+static const event_check test23[] = {
+    { J65_EXPECTED_COLON, 23, "{\"hello\", \"world\"} ", 0 },
+    { J65_START_OBJ,       0, NULL,              0 },
+    { J65_KEY,             0, "hello",           0 },
+};
+
+static const event_check test24[] = {
+    { J65_DONE, 24, "[\rnull\r,\rfalse\r,\rtrue\r]\r", 6 },
+    { J65_START_ARRAY,     0, NULL,              0 },
+    { J65_NULL,            0, NULL,              1 },
+    { J65_FALSE,           0, NULL,              3 },
+    { J65_TRUE,            0, NULL,              5 },
+    { J65_END_ARRAY,       0, NULL,              6 },
+};
+
+static const event_check test25[] = {
+    { J65_DONE, 25, "[\r\nnull\r\n,\r\nfalse\r\n,\r\ntrue\r\n]\r\n", 6 },
+    { J65_START_ARRAY,     0, NULL,              0 },
+    { J65_NULL,            0, NULL,              1 },
+    { J65_FALSE,           0, NULL,              3 },
+    { J65_TRUE,            0, NULL,              5 },
+    { J65_END_ARRAY,       0, NULL,              6 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -311,6 +349,11 @@ int main (int argc, char **argv) {
     TEST(test18);
     TEST(test19);
     TEST(test20);
+    TEST(test21);
+    TEST(test22);
+    TEST(test23);
+    TEST(test24);
+    TEST(test25);
 
     printf ("%d tests passed; %d tests failed\n", passes, failures);
 
