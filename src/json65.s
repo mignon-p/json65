@@ -18,6 +18,8 @@
         .export _j65_get_line_offset
         .export _j65_get_line_number
         .export _j65_get_column_number
+        .export _j65_get_max_depth
+        .export _j65_get_context
 
 ;; zero page locations
         state     = regbank
