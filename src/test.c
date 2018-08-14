@@ -97,6 +97,18 @@ static const event_check test11[] = {
   { J65_END_OBJ,           0, NULL,             0 },
 };
 
+static const event_check test12[] = {
+    { J65_WANT_MORE, 12, "[1, 2, 3", 0 },
+    { J65_START_ARRAY,     0, NULL,             0 },
+    { J65_INTEGER,         1, "1",              0 },
+    { J65_INTEGER,         2, "2",              0 },
+};
+
+static const event_check test13[] = {
+    { J65_DONE, 13, "\n\"slash \\/ tab \\t\"", 1},
+    { J65_STRING,          0, "slash / tab \t", 1 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -255,6 +267,8 @@ int main (int argc, char **argv) {
     TEST(test09);
     TEST(test10);
     TEST(test11);
+    TEST(test12);
+    TEST(test13);
 
     printf ("%d tests passed; %d tests failed\n", passes, failures);
 
