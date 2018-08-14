@@ -832,6 +832,7 @@ loop:   lda escape_codes,y
         iny
         cmp esc_code
         bne loop
+        dey
         lda escaped_chars,y
         clc
         rts
