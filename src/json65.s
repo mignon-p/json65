@@ -1,5 +1,6 @@
         .macpack generic
         .include "zeropage.inc"
+        .include "debug.inc"
 
 ;; routines from the cc65 runtime library
         .import callptr4
@@ -1138,10 +1139,12 @@ done:   jsr writeutf8
 ;; clobbers a, x.
 .proc writeutf8
         lda long1,x
+        print_hex
         sta (strbuf),y
         iny
         dex
         bpl writeutf8
+        print_nl
         rts
 .endproc                ; writeutf8
 
