@@ -248,6 +248,22 @@ static const event_check test39[] = {
   { J65_PARSE_ERROR,  39, "nue ", 0 },
 };
 
+static const event_check test40[] = {
+    { J65_PARSE_ERROR, 40, "]", 0 },
+};
+
+static const event_check test41[] = {
+    { J65_ILLEGAL_ESCAPE, 41, "\"This is \\j not allowed\"", 0 },
+};
+
+static const event_check test42[] = {
+    { J65_ILLEGAL_ESCAPE, 42, "\"This is \\uucp not either\"", 0 },
+};
+
+static const event_check test43[] = {
+    { J65_ILLEGAL_ESCAPE, 43, "\"And this? \\u\"", 0 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -437,6 +453,10 @@ int main (int argc, char **argv) {
     TEST(test37);
     TEST(test38);
     TEST(test39);
+    TEST(test40);
+    TEST(test41);
+    TEST(test42);
+    TEST(test43);
 
     if (failures > 0)
         color = 31;             /* red */
