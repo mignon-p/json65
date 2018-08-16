@@ -19,7 +19,7 @@ int main (int argc, char **argv) {
         snprintf (buf1, sizeof (buf1), "%u", i);
         results[i] = j65_intern_string (&strs, buf1);
         if (strcmp (buf1, results[i]) != 0) {
-            printf ("first loop: '%s' (%p) not equal to '%s' (%p)\n",
+            printf ("first loop: '%.20s' (%p) not equal to '%s' (%p)\n",
                     results[i], results[i],
                     buf1, buf1);
             return 1;
