@@ -4,8 +4,10 @@
 #include <string.h>
 #include "json65-string.h"
 
+#define ITERATIONS 300
+
 static j65_strings strs;
-static const char *results[300];
+static const char *results[ITERATIONS];
 static char buf1[10];
 static char buf2[10];
 
@@ -15,7 +17,7 @@ int main (int argc, char **argv) {
 
     j65_init_strings (&strs);
 
-    for (i = 0 ; i < 300 ; i++) {
+    for (i = 0 ; i < ITERATIONS ; i++) {
         snprintf (buf1, sizeof (buf1), "%u", i);
         results[i] = j65_intern_string (&strs, buf1);
         if (strcmp (buf1, results[i]) != 0) {
@@ -26,7 +28,7 @@ int main (int argc, char **argv) {
         }
     }
 
-    for (i = 0 ; i < 300 ; i++) {
+    for (i = 0 ; i < ITERATIONS ; i++) {
         snprintf (buf2, sizeof (buf2), "%u", i);
         tmp = j65_intern_string (&strs, buf2);
         if (strcmp (buf2, tmp) != 0) {
