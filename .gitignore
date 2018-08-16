@@ -1,4 +1,7 @@
 *~
 *.o
+*.map
+*.system
 test
-test.map
+test-string
+test-tree
