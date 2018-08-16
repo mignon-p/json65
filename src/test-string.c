@@ -11,6 +11,22 @@ static const char *results[ITERATIONS];
 static char buf1[10];
 static char buf2[10];
 
+static void print_bucket_usage (void) {
+    uint8_t *lo;
+    uint8_t *hi;
+    uint16_t i, used = 0;
+
+    lo = (uint8_t *) &strs;
+    hi = lo + 256;
+
+    for (i = 0 ; i < 256 ; i++) {
+        if (lo[i] || hi[i])
+            used++;
+    }
+
+    printf ("used %u/256 buckets\n", used);
+}
+
 int main (int argc, char **argv) {
     uint16_t i;
     const char *tmp;
@@ -40,6 +56,9 @@ int main (int argc, char **argv) {
             return 1;
         }
     }
+
+    print_bucket_usage ();
+    j65_free_strings (&strs);
 
     printf ("Success!\n");
     return 0;
