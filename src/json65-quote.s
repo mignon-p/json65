@@ -46,7 +46,7 @@
         ldy #0
 loop1:  sty startidx
 loop2:  lda (strptr),y
-        cpy '#'
+        cmp '#'
         bge higher
         and #$fe
         cmp #' '
