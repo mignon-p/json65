@@ -1,5 +1,4 @@
         .macpack generic
-        .macpack longbranch
         .include "zeropage.inc"
         .include "debug.inc"
 
@@ -51,17 +50,13 @@ loop:   sta (ptr1),y
 ;; const char *j65_intern_string (j65_strings *strs, const char *str);
 .proc _j65_intern_string
         jsr debug_str
+        print_str ": "
         sta strptr
         stx strptr+1
-        print_word strptr
-        print_str ": "
         jsr hash_str
         print_hex
-        print_str "/"
-        sta hash_val
-        txa
-        print_hex
         print_str " "
+        sta hash_val
         stx len
         jsr popax               ; get pointer to j65_strings structure
         sta loptr
@@ -77,11 +72,11 @@ linkloop:                       ; traverse linked list
         sta linkptr+1
         print_word linkptr
         ora linkptr
-        jeq not_found
+        beq not_found
         ldy #2
         lda (linkptr),y
         cmp len
-        jne nextlink
+        bne nextlink
         lda linkptr             ; compare string
         add #3
         sta tmpptr
@@ -89,13 +84,6 @@ linkloop:                       ; traverse linked list
         adc #0
         sta tmpptr+1
         ldy #0
-        print_str " strptr = "
-        print_word strptr
-        print_str " tmpptr = "
-        print_word tmpptr
-        print_str " len = "
-        lda len
-        print_hex
 strloop:
         lda (strptr),y
         cmp (tmpptr),y
@@ -108,14 +96,6 @@ strloop:
 fail:   print_nl
         rts
 nextlink:
-        print_str " ("
-        print_hex
-        print_str " != "
-        lda (tmpptr),y
-        print_hex
-        print_str ") at "
-        tya
-        print_hex
         ldy #0
         lda (linkptr),y
         tax
@@ -135,7 +115,7 @@ skip:   jsr _malloc
         print_str " malloc got: "
         print_word tmpptr
         ora tmpptr+1
-        jeq fail                ; if malloc returned null, we return null
+        beq fail                ; if malloc returned null, we return null
         ldy hash_val
         lda (hiptr),y           ; add new memory to linked list
         tax
