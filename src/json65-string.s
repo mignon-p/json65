@@ -52,7 +52,7 @@ loop:   sta (ptr1),y
         stx strptr+1
         jsr hash_str
         sta hash_val
-        stx len
+        sty len
         jsr popax               ; get pointer to j65_strings structure
         sta loptr
         stx loptr+1
@@ -125,7 +125,7 @@ skip:   jsr _malloc
         lda len
         sta (tmpptr),y
         lda tmpptr              ; copy string
-        adc #3
+        add #3
         sta tmpptr
         bcc skip2
         inc tmpptr+1
