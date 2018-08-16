@@ -2,6 +2,7 @@
 #define J65_H
 
 #include <stdint.h>
+#include <stddef.h>             /* for size_t */
 
 /*
   An event which is passed to the callback function, indicating
