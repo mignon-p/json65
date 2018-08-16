@@ -82,8 +82,8 @@ S:      .asciiz str
 
 .macro print_long arg
         save_regs
-        lda #<percent_lu
-        ldx #>percent_lu
+        lda #<percent_08lx
+        ldx #>percent_08lx
         jsr pushax
         lda arg+2
         sta sreg
@@ -98,8 +98,26 @@ S:      .asciiz str
 .endmacro               ; print_log
 
         .data
-percent_lu:
+percent_08lx:
         .asciiz "[%08lx]"
+        .code
+
+.macro print_word arg
+        save_regs
+        lda #<percent_04x
+        ldx #>percent_04x
+        jsr pushax
+        lda arg
+        ldx arg+1
+        jsr pushax
+        ldy #4
+        jsr _printf
+        restore_regs
+.endmacro               ; print_log
+
+        .data
+percent_04x:
+        .asciiz "[%04x]"
         .code
 
 .proc debug_str
