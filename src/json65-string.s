@@ -188,6 +188,14 @@ loop:   sty idx
 done:   rts
 .endproc                ; freelink
 
+;; rotate accumulator left by 1.  clobbers x
+.macro rotate_left
+        tax
+        rol
+        txa
+        rol
+.endmacro               ; rotate_left
+
 ;; hash the (NUL terminated) string pointed at by strptr.
 ;; return hash in a and length in y.
 .proc hash_str
@@ -199,12 +207,9 @@ loop:   sta t1
         iny
         beq done0
         add t1
-        tax
-        rol
-        txa
-        rol
-        sty t1
-        eor t1
+        rotate_left
+        rotate_left
+        rotate_left
         jmp loop
 done0:  dey
 done:   lda t1
