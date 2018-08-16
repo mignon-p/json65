@@ -114,7 +114,7 @@ skip:   jsr _malloc
         stx tmpptr+1
         print_str " malloc got: "
         print_word tmpptr
-        ora tmpptr
+        ora tmpptr+1
         beq fail                ; if malloc returned null, we return null
         ldy hash_val
         lda (hiptr),y           ; add new memory to linked list
