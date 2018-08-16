@@ -1,6 +1,5 @@
         .macpack generic
         .include "zeropage.inc"
-        .include "debug.inc"
 
         .import _free
         .import _malloc
@@ -49,13 +48,9 @@ loop:   sta (ptr1),y
 
 ;; const char *j65_intern_string (j65_strings *strs, const char *str);
 .proc _j65_intern_string
-        jsr debug_str
-        print_str ": "
         sta strptr
         stx strptr+1
         jsr hash_str
-        print_hex
-        print_str " "
         sta hash_val
         stx len
         jsr popax               ; get pointer to j65_strings structure
@@ -70,7 +65,6 @@ loop:   sta (ptr1),y
         lda (hiptr),y
 linkloop:                       ; traverse linked list
         sta linkptr+1
-        print_word linkptr
         ora linkptr
         beq not_found
         ldy #2
@@ -93,8 +87,7 @@ strloop:
         bne strloop
         lda tmpptr              ; return pointer to string from table
         ldx tmpptr+1
-fail:   print_nl
-        rts
+fail:   rts
 nextlink:
         ldy #0
         lda (linkptr),y
@@ -112,8 +105,6 @@ not_found:                      ; so we need to add it to the hash table
 skip:   jsr _malloc
         sta tmpptr
         stx tmpptr+1
-        print_str " malloc got: "
-        print_word tmpptr
         ora tmpptr+1
         beq fail                ; if malloc returned null, we return null
         ldy hash_val
@@ -149,11 +140,8 @@ copyloop:
 copydone:
         lda #0
         sta (tmpptr),y
-        print_str " new string: "
-        print_word tmpptr
         lda tmpptr              ; return pointer to new string
         ldx tmpptr+1
-        print_nl
         rts
 .endproc                ; _j65_intern_string
 
