@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>             /* malloc and free */
 #include "json65-tree.h"
-#include <stdio.h>
 
 typedef struct {
     j65_strings strings;
@@ -43,9 +42,6 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
     n = (j65_node *) malloc (sizeof (j65_node));
     if (n == NULL)
         return J65_OUT_OF_MEMORY;
-
-    printf ("building: %p: %u  add_child = %u, current = %p\n",
-            n, event, tree->add_child, tree->current);
 
     n->node_type = event;
     n->location.line_offset = j65_get_line_offset (p);
