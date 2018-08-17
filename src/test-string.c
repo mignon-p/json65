@@ -1,4 +1,4 @@
-/* cl65 -I. -t sim6502 -o test-string -m test-string.map json65.s json65-string.s json65-tree.c test-string.c */
+/* cl65 -I. -t sim6502 -o test-string -m test-string.map json65-string.s test-string.c */
 
 #include <stdio.h>
 #include <string.h>

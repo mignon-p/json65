@@ -188,11 +188,9 @@ loop:   sty idx
 done:   rts
 .endproc                ; freelink
 
-;; rotate accumulator left by 1.  clobbers x
+;; rotate accumulator left by 1.
 .macro rotate_left
-        tax
-        rol
-        txa
+        cmp #$80
         rol
 .endmacro               ; rotate_left
 
