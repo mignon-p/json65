@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>             /* malloc and free */
 #include "json65-tree.h"
+#include <stdio.h>
 
 typedef struct {
     j65_strings strings;
@@ -43,6 +44,9 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
     if (n == NULL)
         return J65_OUT_OF_MEMORY;
 
+    printf ("building: %p: %u  add_child = %u, current = %p\n",
+            n, event, tree->add_child, tree->current);
+
     n->node_type = event;
     n->location.line_offset = j65_get_line_offset (p);
     n->location.line_number = j65_get_line_number (p);
@@ -69,17 +73,20 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
 
     if (tree->current == NULL) {
         tree->root = n;
+        tree->current = n;
     } else if (tree->add_child) {
-        if (event == J65_KEY)
+        if (tree->current->node_type == J65_KEY) {
             tree->current->u.pair.value = n;
-        else
+            if (event == J65_START_OBJ || event == J65_START_ARRAY)
+                tree->current = n;
+        } else {
             tree->current->u.child = n;
+            tree->current = n;
+        }
     } else {
         tree->current->next = n;
-    }
-
-    if (event != J65_KEY)
         tree->current = n;
+    }
 
     switch (event) {
     case J65_KEY:

@@ -1,12 +1,18 @@
 #include "json65-print.h"
 #include "json65-quote.h"
 
+static int indent = 0;
+
 int __fastcall__ j65_print_tree (j65_node *n, FILE *f) {
     uint8_t node_type = n->node_type;
     int ret;
     j65_node *n2;
     j65_node *n3;
     char c1, c2;
+
+    for (ret = 0; ret < indent; ret++)
+        printf ("  ");
+    printf ("%p: %u\n", n, node_type);
 
     switch (node_type) {
     case J65_NULL:
@@ -33,7 +39,9 @@ int __fastcall__ j65_print_tree (j65_node *n, FILE *f) {
         fputc ('\"', f);
         j65_print_escaped (n->u.pair.key, f);
         fputs ("\":", f);
+        indent++;
         ret = j65_print_tree (n->u.pair.value, f);
+        indent--;
         if (ret < 0)
             return ret;
         break;
@@ -49,7 +57,9 @@ int __fastcall__ j65_print_tree (j65_node *n, FILE *f) {
         fputc (c1, f);
         n2 = n->u.child;
         while (n2 != NULL) {
+            indent++;
             ret = j65_print_tree (n2, f);
+            indent--;
             if (ret < 0)
                 return ret;
             n3 = n2->next;
@@ -58,6 +68,10 @@ int __fastcall__ j65_print_tree (j65_node *n, FILE *f) {
             n2 = n3;
         }
         fputc (c2, f);
+        break;
+    default:
+        /* should never happen... */
+        fprintf (f, "?%u(%p)", node_type, n);
         break;
     }
 
