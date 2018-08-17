@@ -2,7 +2,9 @@
 *.o
 *.map
 *.system
+*.tmp
 test
 test-string
 test-tree
 test-quote
+test-print
