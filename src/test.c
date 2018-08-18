@@ -4,7 +4,7 @@
 #include <string.h>
 #include <json65.h>
 
-static j65_parser state;
+static j65_parser parser;
 static int passes, failures;
 static char buf[80];
 
@@ -408,8 +408,8 @@ static void run_test (const event_check *events, size_t len) {
     ctx.pos = 1;
 
     /* Use a small nesting depth to make it easy to test. */
-    j65_init (&state, (void *) &ctx, callback, 4);
-    ret = j65_parse(&state, str, strlen(str));
+    j65_init (&parser, (void *) &ctx, callback, 4);
+    ret = j65_parse(&parser, str, strlen(str));
 
     if (ret == J65_USER_ERROR) {
         return;
@@ -427,7 +427,7 @@ static void run_test (const event_check *events, size_t len) {
         return;
     }
 
-    line_no = j65_get_line_number(&state);
+    line_no = j65_get_line_number(&parser);
     if (line_no != events->line_no) {
         print_fail();
         printf ("Final line number was %lu but expected %lu\n",
@@ -444,8 +444,8 @@ static void depth_test (uint8_t specified, uint8_t expected) {
     snprintf (buf, sizeof (buf), "depth test (%u):", specified);
     printf ("%-18s", buf);
 
-    j65_init (&state, NULL, NULL, specified);
-    actual = j65_get_max_depth (&state);
+    j65_init (&parser, NULL, NULL, specified);
+    actual = j65_get_max_depth (&parser);
 
     if (actual != expected) {
         print_fail ();
