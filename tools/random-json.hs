@@ -14,7 +14,7 @@ randomLiteral = do
 
 randomInteger :: MonadRandom m => m String
 randomInteger = do
-  x <- getRandomR (-18446744073709551616, 18446744073709551616)
+  x <- getRandomR (-4294967296, 4294967296)
   return $ show (x :: Integer)
 
 randomNumber :: MonadRandom m => m String
