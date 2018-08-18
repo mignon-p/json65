@@ -657,10 +657,10 @@ disp_start_obj:
 descend:
         pha
         stx evtype
-        jsr call_callback
-        bcs pop_and_error
         getstate st::parser_st2
         jsr push_state_stack
+        bcs pop_and_error
+        jsr call_callback
         bcs pop_and_error
         pla
         tax
