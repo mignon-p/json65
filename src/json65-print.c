@@ -11,18 +11,20 @@ enum {
  * and the 6502 stack is not very deep. */
 int __fastcall__ j65_print_tree (j65_node *root, FILE *f) {
     j65_node *n = root;
-    uint8_t node_type = n->node_type;
     uint8_t direction = DESCENDING;
     bool done = false;
     char c1, c2;
     j65_node *next;
     uint8_t next_direction;
     bool print_comma;
+    uint8_t node_type;
 
     if (root == NULL)
         return 0;
 
     do {
+        node_type = n->node_type;
+
         /* the default (for scalars) is to visit the next sibling */
         if (n->next) {
             next = n->next;
