@@ -17,7 +17,7 @@ static int do_test (void) {
     int ret;
 
     j65_init_tree (&tree);
-    j65_init (&parser, &tree, j65_tree_callback, 16);
+    j65_init (&parser, &tree, j65_tree_callback, 255);
     len = strlen (buf1);
     status = j65_parse (&parser, buf1, len);
     if (status != J65_DONE) {
