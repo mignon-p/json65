@@ -52,7 +52,7 @@ randomString = do
 
 randomArray :: MonadRandom m => Int -> m String
 randomArray level = do
-  len <- getRandomR (0, 12)
+  len <- getRandomR (0, 5)
   values <- replicateM len (randomValue (level + 1))
   return $ "[" ++ intercalate "," values ++ "]"
 
@@ -61,7 +61,7 @@ mkPair k v = k ++ ":" ++ v
 
 randomObject :: MonadRandom m => Int -> m String
 randomObject level = do
-  len <- getRandomR (0, 12)
+  len <- getRandomR (0, 5)
   keys <- replicateM len randomString
   values <- replicateM len (randomValue (level + 1))
   let pairs = zipWith mkPair keys values
@@ -69,11 +69,11 @@ randomObject level = do
 
 randomValue :: MonadRandom m => Int -> m String
 randomValue level = do
-  let highest = if level >= 16 then 5 else 3
+  let highest = if level >= 3 then 3 else 5
   x <- getRandomR (0, highest)
   case x of
-    5 -> randomArray level
-    6 -> randomObject level
+    4 -> randomArray level
+    5 -> randomObject level
     _ -> [randomLiteral, randomInteger, randomNumber, randomString] !! x
 
 randomArrayOrObject :: MonadRandom m => m String
