@@ -53,7 +53,7 @@ randomString = do
 randomArray :: MonadRandom m => Int -> m String
 randomArray level = do
   len <- getRandomR (0, 5)
-  values <- replicateM len (randomValue (level + 1))
+  values <- replicateM len (randomValue (level - 1))
   return $ "[" ++ intercalate "," values ++ "]"
 
 mkPair :: String -> String -> String
@@ -63,23 +63,30 @@ randomObject :: MonadRandom m => Int -> m String
 randomObject level = do
   len <- getRandomR (0, 5)
   keys <- replicateM len randomString
-  values <- replicateM len (randomValue (level + 1))
+  values <- replicateM len (randomValue (level - 1))
   let pairs = zipWith mkPair keys values
   return $ "{" ++ intercalate "," pairs ++ "}"
 
 randomValue :: MonadRandom m => Int -> m String
 randomValue level = do
-  let highest = if level >= 3 then 3 else 5
+  let highest = if level < 0 then 3 else 5
   x <- getRandomR (0, highest)
   case x of
     4 -> randomArray level
     5 -> randomObject level
     _ -> [randomLiteral, randomInteger, randomNumber, randomString] !! x
 
-randomArrayOrObject :: MonadRandom m => m String
-randomArrayOrObject = do
+randomArrayOrObject :: MonadRandom m => Int -> m String
+randomArrayOrObject level = do
   x <- getRandom
-  if x then randomArray 0 else randomObject 0
+  if x then randomArray level else randomObject level
+
+generateStuff :: Int -> IO ()
+generateStuff level = do
+  str <- randomArrayOrObject level
+  when (length str < 2046) $ do
+    putStrLn str
+    generateStuff (level + 1)
 
 main :: IO ()
-main = replicateM_ 10 (randomArrayOrObject >>= putStrLn)
+main = generateStuff 0
