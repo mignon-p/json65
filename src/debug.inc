@@ -65,6 +65,11 @@ S:      .asciiz str
         jsr debug_nl
 .endmacro               ; print_str_nl
 
+.macro print_str_hex str
+        print_str str
+        jsr debug_hex
+.endmacro               ; print_str_hex
+
 .macro print_hex_nl
         jsr debug_hex
         jsr debug_nl
