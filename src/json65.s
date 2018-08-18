@@ -1,5 +1,6 @@
         .macpack generic
         .include "zeropage.inc"
+        .include "debug.inc"
 
 ;; routines from the cc65 runtime library
         .import callptr4
@@ -1494,7 +1495,10 @@ flags_prop_int:
 ;; clobbers x, y.
 .proc push_state_stack
         tax
+        getstate st::stack_min
+        print_str_hex "stack_min = "
         getstate st::stack_idx
+        print_str_hex_nl ", stack_idx = "
         ldy #st::stack_min
         cmp (state),y
         blt stack_full
