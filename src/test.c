@@ -15,6 +15,7 @@ typedef struct {
     int32_t integer;
     const char *str;
     uint32_t line_no;
+    uint8_t depth;
 } event_check;
 
 typedef struct {
@@ -25,272 +26,272 @@ typedef struct {
 } my_context;
 
 static const event_check test00[] = {
-  { J65_DONE, 0, "[] ", 0 },
-  { J65_START_ARRAY,       0, NULL,             0 },
-  { J65_END_ARRAY,         0, NULL,             0 },
+  { J65_DONE, 0, "[] ", 0, 0 },
+  { J65_START_ARRAY,       0, NULL,             0, 1 },
+  { J65_END_ARRAY,         0, NULL,             0, 1 },
 };
 
 static const event_check test01[] = {
-  { J65_DONE, 1, "{} ", 0 },
-  { J65_START_OBJ,         0, NULL,             0 },
-  { J65_END_OBJ,           0, NULL,             0 },
+  { J65_DONE, 1, "{} ", 0, 0 },
+  { J65_START_OBJ,         0, NULL,             0, 1 },
+  { J65_END_OBJ,           0, NULL,             0, 1 },
 };
 
 static const event_check test02[] = {
-  { J65_DONE, 2, "1234 ", 0 },
-  { J65_INTEGER,        1234, "1234",           0 },
+  { J65_DONE, 2, "1234 ", 0, 0 },
+  { J65_INTEGER,        1234, "1234",           0, 0 },
 };
 
 static const event_check test03[] = {
-  { J65_DONE, 3, "-10000000 ", 0 },
-  { J65_INTEGER,   -10000000, "-10000000",      0 },
+  { J65_DONE, 3, "-10000000 ", 0, 0 },
+  { J65_INTEGER,   -10000000, "-10000000",      0, 0 },
 };
 
 static const event_check test04[] = {
-  { J65_DONE, 4, "1.5 ", 0 },
-  { J65_NUMBER,            0, "1.5",            0 },
+  { J65_DONE, 4, "1.5 ", 0, 0 },
+  { J65_NUMBER,            0, "1.5",            0, 0 },
 };
 
 static const event_check test05[] = {
-  { J65_DONE, 5, "1e-2 ", 0 },
-  { J65_NUMBER,            0, "1e-2",           0 },
+  { J65_DONE, 5, "1e-2 ", 0, 0 },
+  { J65_NUMBER,            0, "1e-2",           0, 0 },
 };
 
 static const event_check test06[] = {
-  { J65_DONE, 6, "\"Hello, World\" ", 0 },
-  { J65_STRING,            0, "Hello, World",   0 },
+  { J65_DONE, 6, "\"Hello, World\" ", 0, 0 },
+  { J65_STRING,            0, "Hello, World",   0, 0 },
 };
 
 static const event_check test07[] = {
-  { J65_DONE, 7, "null ", 0 },
-  { J65_NULL,              0, NULL,             0 },
+  { J65_DONE, 7, "null ", 0, 0 },
+  { J65_NULL,              0, NULL,             0, 0 },
 };
 
 static const event_check test08[] = {
-  { J65_DONE, 8, "false ", 0 },
-  { J65_FALSE,             0, NULL,             0 },
+  { J65_DONE, 8, "false ", 0, 0 },
+  { J65_FALSE,             0, NULL,             0, 0 },
 };
 
 static const event_check test09[] = {
-  { J65_DONE, 9, "true ", 0 },
-  { J65_TRUE,              0, NULL,             0 },
+  { J65_DONE, 9, "true ", 0, 0 },
+  { J65_TRUE,              0, NULL,             0, 0 },
 };
 
 static const event_check test10[] = {
-  { J65_DONE, 10, "{\"foo\": 5} ", 0 },
-  { J65_START_OBJ,         0, NULL,             0 },
-  { J65_KEY,               0, "foo",            0 },
-  { J65_INTEGER,           5, "5",              0 },
-  { J65_END_OBJ,           0, NULL,             0 },
+  { J65_DONE, 10, "{\"foo\": 5} ", 0, 0 },
+  { J65_START_OBJ,         0, NULL,             0, 1 },
+  { J65_KEY,               0, "foo",            0, 1 },
+  { J65_INTEGER,           5, "5",              0, 1 },
+  { J65_END_OBJ,           0, NULL,             0, 1 },
 };
 
 static const event_check test11[] = {
-  { J65_DONE, 11, "{\"foo\": \"bar\", \"baz\": [1, 2, 3]} ", 0 },
-  { J65_START_OBJ,         0, NULL,             0 },
-  { J65_KEY,               0, "foo",            0 },
-  { J65_STRING,            0, "bar",            0 },
-  { J65_KEY,               0, "baz",            0 },
-  { J65_START_ARRAY,       0, NULL,             0 },
-  { J65_INTEGER,           1, "1",              0 },
-  { J65_INTEGER,           2, "2",              0 },
-  { J65_INTEGER,           3, "3",              0 },
-  { J65_END_ARRAY,         0, NULL,             0 },
-  { J65_END_OBJ,           0, NULL,             0 },
+  { J65_DONE, 11, "{\"foo\": \"bar\", \"baz\": [1, 2, 3]} ", 0, 0 },
+  { J65_START_OBJ,         0, NULL,             0, 1 },
+  { J65_KEY,               0, "foo",            0, 1 },
+  { J65_STRING,            0, "bar",            0, 1 },
+  { J65_KEY,               0, "baz",            0, 1 },
+  { J65_START_ARRAY,       0, NULL,             0, 2 },
+  { J65_INTEGER,           1, "1",              0, 2 },
+  { J65_INTEGER,           2, "2",              0, 2 },
+  { J65_INTEGER,           3, "3",              0, 2 },
+  { J65_END_ARRAY,         0, NULL,             0, 2 },
+  { J65_END_OBJ,           0, NULL,             0, 1 },
 };
 
 static const event_check test12[] = {
-    { J65_WANT_MORE, 12, "[1, 2, 3", 0 },
-    { J65_START_ARRAY,     0, NULL,             0 },
-    { J65_INTEGER,         1, "1",              0 },
-    { J65_INTEGER,         2, "2",              0 },
+    { J65_WANT_MORE, 12, "[1, 2, 3", 0, 0 },
+    { J65_START_ARRAY,     0, NULL,             0, 1 },
+    { J65_INTEGER,         1, "1",              0, 1 },
+    { J65_INTEGER,         2, "2",              0, 1 },
 };
 
 static const event_check test13[] = {
-    { J65_DONE, 13, "\n\"slash \\/ tab \\t\"", 1 },
-    { J65_STRING,          0, "slash / tab \t", 1 },
+    { J65_DONE, 13, "\n\"slash \\/ tab \\t\"", 1, 0 },
+    { J65_STRING,          0, "slash / tab \t", 1, 0 },
 };
 
 static const event_check test14[] = {
-    { J65_DONE, 14, "\"slash \\/ backslash \\\\ tab \\t\"", 0 },
-    { J65_STRING,          0, "slash / backslash \\ tab \t", 0 },
+    { J65_DONE, 14, "\"slash \\/ backslash \\\\ tab \\t\"", 0, 0 },
+    { J65_STRING,          0, "slash / backslash \\ tab \t", 0, 0 },
 };
 
 static const event_check test15[] = {
-    { J65_DONE, 15, "\"have \\u0061 nice day\"", 0 },
-    { J65_STRING,          0, "have a nice day", 0 },
+    { J65_DONE, 15, "\"have \\u0061 nice day\"", 0, 0 },
+    { J65_STRING,          0, "have a nice day", 0, 0 },
 };
 
 static const event_check test16[] = {
-    { J65_DONE, 16, "\"have \\u0061\\u0020nice day\"", 0 },
-    { J65_STRING,          0, "have a nice day", 0 },
+    { J65_DONE, 16, "\"have \\u0061\\u0020nice day\"", 0, 0 },
+    { J65_STRING,          0, "have a nice day", 0, 0 },
 };
 
 static const event_check test17[] = {
-    { J65_DONE, 17, "\"have \\u0061\\\\nice day\"", 0 },
-    { J65_STRING,          0, "have a\\nice day", 0 },
+    { J65_DONE, 17, "\"have \\u0061\\\\nice day\"", 0, 0 },
+    { J65_STRING,          0, "have a\\nice day", 0, 0 },
 };
 
 static const event_check test18[] = {
-    { J65_DONE, 18, "\"this \\uD834\\uDD1E is a G clef\"", 0 },
-    { J65_STRING,          0, "this 𝄞 is a G clef", 0 },
+    { J65_DONE, 18, "\"this \\uD834\\uDD1E is a G clef\"", 0, 0 },
+    { J65_STRING,          0, "this 𝄞 is a G clef", 0, 0 },
 };
 
 static const event_check test19[] = {
-    { J65_DONE, 19, "\"\\u00a9 2018\"", 0 },
-    { J65_STRING,          0, "© 2018", 0 },
+    { J65_DONE, 19, "\"\\u00a9 2018\"", 0, 0 },
+    { J65_STRING,          0, "© 2018", 0, 0 },
 };
 
 static const event_check test20[] = {
-    { J65_DONE, 20, "\"cents \\u00a2 Euros \\u20ac\"", 0 },
-    { J65_STRING,          0, "cents ¢ Euros €", 0 },
+    { J65_DONE, 20, "\"cents \\u00a2 Euros \\u20ac\"", 0, 0 },
+    { J65_STRING,          0, "cents ¢ Euros €", 0, 0 },
 };
 
 static const event_check test21[] = {
-    { J65_DONE, 21, "[\nnull\n,\nfalse\n,\ntrue\n]\n", 6 },
-    { J65_START_ARRAY,     0, NULL,              0 },
-    { J65_NULL,            0, NULL,              1 },
-    { J65_FALSE,           0, NULL,              3 },
-    { J65_TRUE,            0, NULL,              5 },
-    { J65_END_ARRAY,       0, NULL,              6 },
+    { J65_DONE, 21, "[\nnull\n,\nfalse\n,\ntrue\n]\n", 6, 0 },
+    { J65_START_ARRAY,     0, NULL,              0, 1 },
+    { J65_NULL,            0, NULL,              1, 1 },
+    { J65_FALSE,           0, NULL,              3, 1 },
+    { J65_TRUE,            0, NULL,              5, 1 },
+    { J65_END_ARRAY,       0, NULL,              6, 1 },
 };
 
 static const event_check test22[] = {
-    { J65_EXPECTED_STRING, 22, "{false: true} ", 0 },
-    { J65_START_OBJ,       0, NULL,              0 },
+    { J65_EXPECTED_STRING, 22, "{false: true} ", 0, 0 },
+    { J65_START_OBJ,       0, NULL,              0, 1 },
 };
 
 static const event_check test23[] = {
-    { J65_EXPECTED_COLON, 23, "{\"hello\", \"world\"} ", 0 },
-    { J65_START_OBJ,       0, NULL,              0 },
-    { J65_KEY,             0, "hello",           0 },
+    { J65_EXPECTED_COLON, 23, "{\"hello\", \"world\"} ", 0, 0 },
+    { J65_START_OBJ,       0, NULL,              0, 1 },
+    { J65_KEY,             0, "hello",           0, 1 },
 };
 
 static const event_check test24[] = {
-    { J65_DONE, 24, "[\rnull\r,\rfalse\r,\rtrue\r]\r", 6 },
-    { J65_START_ARRAY,     0, NULL,              0 },
-    { J65_NULL,            0, NULL,              1 },
-    { J65_FALSE,           0, NULL,              3 },
-    { J65_TRUE,            0, NULL,              5 },
-    { J65_END_ARRAY,       0, NULL,              6 },
+    { J65_DONE, 24, "[\rnull\r,\rfalse\r,\rtrue\r]\r", 6, 0 },
+    { J65_START_ARRAY,     0, NULL,              0, 1 },
+    { J65_NULL,            0, NULL,              1, 1 },
+    { J65_FALSE,           0, NULL,              3, 1 },
+    { J65_TRUE,            0, NULL,              5, 1 },
+    { J65_END_ARRAY,       0, NULL,              6, 1 },
 };
 
 static const event_check test25[] = {
-    { J65_DONE, 25, "[\r\nnull\r\n,\r\nfalse\r\n,\r\ntrue\r\n]\r\n", 6 },
-    { J65_START_ARRAY,     0, NULL,              0 },
-    { J65_NULL,            0, NULL,              1 },
-    { J65_FALSE,           0, NULL,              3 },
-    { J65_TRUE,            0, NULL,              5 },
-    { J65_END_ARRAY,       0, NULL,              6 },
+    { J65_DONE, 25, "[\r\nnull\r\n,\r\nfalse\r\n,\r\ntrue\r\n]\r\n", 6, 0 },
+    { J65_START_ARRAY,     0, NULL,              0, 1 },
+    { J65_NULL,            0, NULL,              1, 1 },
+    { J65_FALSE,           0, NULL,              3, 1 },
+    { J65_TRUE,            0, NULL,              5, 1 },
+    { J65_END_ARRAY,       0, NULL,              6, 1 },
 };
 
 static const event_check test26[] = {
-  { J65_DONE, 26, "2147483647 ", 0 },
-  { J65_INTEGER,  2147483647, "2147483647",           0 },
+  { J65_DONE, 26, "2147483647 ", 0, 0 },
+  { J65_INTEGER,  2147483647, "2147483647",           0, 0 },
 };
 
 static const event_check test27[] = {
-  { J65_DONE, 27, "-2147483647 ", 0 },
-  { J65_INTEGER, -2147483647, "-2147483647",          0 },
+  { J65_DONE, 27, "-2147483647 ", 0, 0 },
+  { J65_INTEGER, -2147483647, "-2147483647",          0, 0 },
 };
 
 static const event_check test28[] = {
-  { J65_DONE, 28, "2147483648 ", 0 },
-  { J65_NUMBER,            0, "2147483648",           0 },
+  { J65_DONE, 28, "2147483648 ", 0, 0 },
+  { J65_NUMBER,            0, "2147483648",           0, 0 },
 };
 
 static const event_check test29[] = {
-  { J65_DONE, 29, "-2147483648 ", 0 },
-  { J65_INTEGER, -2147483648, "-2147483648",          0 },
+  { J65_DONE, 29, "-2147483648 ", 0, 0 },
+  { J65_INTEGER, -2147483648, "-2147483648",          0, 0 },
 };
 
 static const event_check test30[] = {
-  { J65_DONE, 30, "-2147483649 ", 0 },
-  { J65_NUMBER,            0, "-2147483649",          0 },
+  { J65_DONE, 30, "-2147483649 ", 0, 0 },
+  { J65_NUMBER,            0, "-2147483649",          0, 0 },
 };
 
 static const event_check test31[] = {
-  { J65_DONE, 31, "-4294967296 ", 0 },
-  { J65_NUMBER,            0, "-4294967296",          0 },
+  { J65_DONE, 31, "-4294967296 ", 0, 0 },
+  { J65_NUMBER,            0, "-4294967296",          0, 0 },
 };
 
 static const event_check test32[] = {
-  { J65_DONE, 32, "4294967296 ", 0 },
-  { J65_NUMBER,            0, "4294967296",           0 },
+  { J65_DONE, 32, "4294967296 ", 0, 0 },
+  { J65_NUMBER,            0, "4294967296",           0, 0 },
 };
 
 static const event_check test33[] = {
-  { J65_DONE, 33, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0 },
-  { J65_NUMBER, 0, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0 },
+  { J65_DONE, 33, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0, 0 },
+  { J65_NUMBER, 0, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0, 0 },
 };
 
 static const event_check test34[] = {
-  { J65_DONE, 34, "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0 },
-  { J65_NUMBER, 0, "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0 },
+  { J65_DONE, 34, "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0, 0 },
+  { J65_NUMBER, 0, "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0, 0 },
 };
 
 static const event_check test35[] = {
-  { J65_STRING_TOO_LONG, 35, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0 },
+  { J65_STRING_TOO_LONG, 35, "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ", 0, 0 },
 };
 
 static const event_check test36[] = {
-  { J65_PARSE_ERROR, 36, "5-5 ", 0 },
+  { J65_PARSE_ERROR, 36, "5-5 ", 0, 0 },
 };
 
 static const event_check test37[] = {
-  { J65_ILLEGAL_CHAR, 37, "0x2000 ", 0 },
-  { J65_INTEGER,       0, "0",       0 },
+  { J65_ILLEGAL_CHAR, 37, "0x2000 ", 0, 0 },
+  { J65_INTEGER,       0, "0",       0, 0 },
 };
 
 static const event_check test38[] = {
-  { J65_ILLEGAL_CHAR, 38, "barf ", 0 },
+  { J65_ILLEGAL_CHAR, 38, "barf ", 0, 0 },
 };
 
 static const event_check test39[] = {
-  { J65_PARSE_ERROR,  39, "nue ", 0 },
+  { J65_PARSE_ERROR,  39, "nue ", 0, 0 },
 };
 
 static const event_check test40[] = {
-    { J65_PARSE_ERROR, 40, "]", 0 },
+    { J65_PARSE_ERROR, 40, "]", 0, 0 },
 };
 
 static const event_check test41[] = {
-    { J65_ILLEGAL_ESCAPE, 41, "\"This is \\j not allowed\"", 0 },
+    { J65_ILLEGAL_ESCAPE, 41, "\"This is \\j not allowed\"", 0, 0 },
 };
 
 static const event_check test42[] = {
-    { J65_ILLEGAL_ESCAPE, 42, "\"This is \\uucp not either\"", 0 },
+    { J65_ILLEGAL_ESCAPE, 42, "\"This is \\uucp not either\"", 0, 0 },
 };
 
 static const event_check test43[] = {
-    { J65_ILLEGAL_ESCAPE, 43, "\"And this? \\u\"", 0 },
+    { J65_ILLEGAL_ESCAPE, 43, "\"And this? \\u\"", 0, 0 },
 };
 
 static const event_check test44[] = {
-    { J65_DONE, 44, "{\"foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\": \"baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar\"}", 0 },
-    { J65_START_OBJ,         0, NULL,             0 },
-    { J65_KEY,               0, "foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", 0 },
-    { J65_STRING,            0, "baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar", 0 },
-    { J65_END_OBJ,           0, NULL,             0 },
+    { J65_DONE, 44, "{\"foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo\": \"baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar\"}", 0, 0 },
+    { J65_START_OBJ,         0, NULL,             0, 1 },
+    { J65_KEY,               0, "foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", 0, 1 },
+    { J65_STRING,            0, "baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar", 0, 1 },
+    { J65_END_OBJ,           0, NULL,             0, 1 },
 };
 
 static const event_check test45[] = {
-    { J65_DONE, 45, "[[[[]]]]", 0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_END_ARRAY,         0, NULL,             0 },
-    { J65_END_ARRAY,         0, NULL,             0 },
-    { J65_END_ARRAY,         0, NULL,             0 },
-    { J65_END_ARRAY,         0, NULL,             0 },
+    { J65_DONE, 45, "[[[[]]]]", 0, 0 },
+    { J65_START_ARRAY,       0, NULL,             0, 1 },
+    { J65_START_ARRAY,       0, NULL,             0, 2 },
+    { J65_START_ARRAY,       0, NULL,             0, 3 },
+    { J65_START_ARRAY,       0, NULL,             0, 4 },
+    { J65_END_ARRAY,         0, NULL,             0, 4 },
+    { J65_END_ARRAY,         0, NULL,             0, 3 },
+    { J65_END_ARRAY,         0, NULL,             0, 2 },
+    { J65_END_ARRAY,         0, NULL,             0, 1 },
 };
 
 static const event_check test46[] = {
-    { J65_NESTING_TOO_DEEP, 46, "[[[[[]]]]]", 0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
-    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_NESTING_TOO_DEEP, 46, "[[[[[]]]]]", 0, 0 },
+    { J65_START_ARRAY,       0, NULL,             0, 1 },
+    { J65_START_ARRAY,       0, NULL,             0, 2 },
+    { J65_START_ARRAY,       0, NULL,             0, 3 },
+    { J65_START_ARRAY,       0, NULL,             0, 4 },
 };
 
 static const char *event_name (uint8_t event) {
@@ -329,6 +330,7 @@ static int8_t callback (j65_parser *p, uint8_t event) {
     const char *str;
     size_t len1, len2;
     uint32_t line_no;
+    uint8_t depth;
 
     if (ctx->magic != MAGIC) {
         print_fail();
@@ -386,6 +388,14 @@ static int8_t callback (j65_parser *p, uint8_t event) {
         print_fail();
         printf ("[%u] For %s, got line %lu but expected %lu\n",
                 pos, ename, line_no, ec->line_no);
+        return J65_USER_ERROR;
+    }
+
+    depth = j65_get_current_depth (p);
+    if (depth != ec->depth) {
+        print_fail ();
+        printf ("[%u] For %s, got depth %u but expected %u\n",
+                pos, ename, depth, ec->depth);
         return J65_USER_ERROR;
     }
 

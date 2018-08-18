@@ -18,6 +18,7 @@
         .export _j65_get_line_offset
         .export _j65_get_line_number
         .export _j65_get_column_number
+        .export _j65_get_current_depth
         .export _j65_get_max_depth
         .export _j65_get_context
 
@@ -1612,6 +1613,17 @@ get_long:
         ldy #st::col_num+3
         jmp get_long
 .endproc                ; _j65_get_column_number
+
+;; uint8_t __fastcall__ j65_get_current_depth(const j65_state *s);
+.proc _j65_get_current_depth
+        ldy #st::stack_idx
+        sta ptr1
+        stx ptr1+1
+        lda #255
+        sub (ptr1),y
+        ldx #0
+        rts
+.endproc                ; _j65_get_current_depth
 
 ;; uint8_t __fastcall__ j65_get_max_depth(const j65_state *s);
 .proc _j65_get_max_depth

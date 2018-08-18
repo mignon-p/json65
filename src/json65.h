@@ -221,6 +221,8 @@ uint32_t __fastcall__ j65_get_line_number (const j65_parser *p);
  */
 uint32_t __fastcall__ j65_get_column_number (const j65_parser *p);
 
+uint8_t __fastcall__ j65_get_current_depth (const j65_parser *p);
+
 /*
   Returns either 224 or the value of max_depth which was supplied
   to j65_init(), whichever is smaller.
