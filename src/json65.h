@@ -35,6 +35,19 @@ enum j65_event {
   predefined errors below, or it may be an error returned by the
   callback.  User-defined error numbers should be between
   J65_USER_ERROR and -1, inclusive.
+
+  If you want to define your own error codes, I recommend doing it
+  something like this:
+
+  enum {
+    MYERR_MISSING_REQUIRED_KEY = J65_USER_ERROR,
+    MYERR_UNSUPPORTED_KEY,
+    MYERR_VALUE_OUT_OF_RANGE,
+    MYERR_SOME_OTHER_ERROR,
+  };
+
+  This way, your error codes will begin at J65_USER_ERROR, and
+  grow upwards (towards 0).
  */
 enum j65_status {
     J65_DONE      = 1,
@@ -91,14 +104,22 @@ typedef int8_t __fastcall__ (*j65_callback)(j65_parser *p, uint8_t event);
 
   max_depth is the maximum depth of nested objects and arrays allowed
   when parsing the JSON.  max_depth will automatically be capped at
-  224.  (So, you may pass 255 to get the maximum allowable value for
-  max_depth.)  It may sometimes be helpful to limit max_depth to a
+  224.  It may sometimes be helpful to limit max_depth to a
   smaller value.  (For example, if you are going to build up a tree
   and then walk it recursively, the 6502 stack cannot hold 224
   return addresses, so you could limit max_depth to a value somewhat
-  less than 128, to prevent overflowing the stack.)
-  To obtain the value actually used for max_depth, call
-  j65_get_max_depth() on the parser.
+  less than 128, to prevent overflowing the stack.)  To obtain the
+  value actually used for max_depth, call j65_get_max_depth() on the
+  parser.
+
+  If max_depth is 0, then it will be set to the maximum allowable
+  value, which is 224.  So, if you do not wish to furhter limit the
+  maximum depth, pass 0 for max_depth.  This means that the smallest
+  value you can actually set max_depth to is 1, which means that you
+  can only have a top-level array or object, but no arrays or objects
+  inside of it.  (Hypothetically, a max_depth of 0 would mean only
+  top-level scalars are accepted, and no arrays or objects would be
+  allowed at all.  But we do not let you set max_depth to 0.)
 
   Once the j65_parser has been initialized, you may call j65_parse()
   on it.
@@ -221,11 +242,21 @@ uint32_t __fastcall__ j65_get_line_number (const j65_parser *p);
  */
 uint32_t __fastcall__ j65_get_column_number (const j65_parser *p);
 
+/*
+  Returns the current depth of nested arrays and objects.
+  It can be between 0 and max_depth (which is never more than
+  224), inclusive.  Depth 0 only occurs for top-level scalars.
+ */
 uint8_t __fastcall__ j65_get_current_depth (const j65_parser *p);
 
 /*
-  Returns either 224 or the value of max_depth which was supplied
-  to j65_init(), whichever is smaller.
+  Returns the maximum value that j65_get_current_depth() can have.
+  This is the value of max_depth which was supplied to j65_init(),
+  unless the value supplied was 0 or was greater than 224, in which
+  case the max depth will be 224.
+
+  If this depth is exceeded, the parser will return the error code
+  J65_NESTING_TOO_DEEP.
  */
 uint8_t __fastcall__ j65_get_max_depth (const j65_parser *p);
 
