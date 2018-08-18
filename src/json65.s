@@ -195,7 +195,8 @@ loop:   sta (state),y
         putstate st::parser_st2
         lda #$ff
         putstate st::stack_idx
-        sub tmp1                ; subtract max depth from $ff
+        lda #0
+        sub tmp1                ; subtract max depth from 256
         cmp #.sizeof(st)
         bge depth_ok
         lda #.sizeof(st)
@@ -1621,7 +1622,7 @@ get_long:
         ldy #st::stack_min
         sta ptr1
         stx ptr1+1
-        lda #$ff
+        lda #0
         sub (ptr1),y
         ldx #0
         rts
