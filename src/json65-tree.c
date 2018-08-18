@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>             /* malloc and free */
 #include "json65-tree.h"
+#include <stdio.h>
 
 typedef struct {
     j65_strings strings;
@@ -22,6 +23,8 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
     const char *str = NULL;
     j65_node *n;
 
+    printf ("Entered callback with event %u\n", event);
+
     switch (event) {
     case J65_END_OBJ:
     case J65_END_ARRAY:
@@ -30,18 +33,23 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
             tree->current->parent->node_type == J65_KEY) {
             tree->current = tree->current->parent;
         }
+        printf ("Returned on line %u\n", __LINE__);
         return 0;
     case J65_NUMBER:
     case J65_STRING:
     case J65_KEY:
         str = j65_intern_string (&tree->strings, j65_get_string (p));
-        if (str == NULL)
+        if (str == NULL) {
+            printf ("Returned on line %u\n", __LINE__);
             return J65_OUT_OF_MEMORY;
+        }
     }
 
     n = (j65_node *) malloc (sizeof (j65_node));
-    if (n == NULL)
+    if (n == NULL) {
+        printf ("Returned on line %u\n", __LINE__);
         return J65_OUT_OF_MEMORY;
+    }
 
     n->node_type = event;
     n->location.line_offset = j65_get_line_offset (p);
@@ -95,6 +103,7 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
         break;
     }
 
+    printf ("Returned on line %u\n", __LINE__);
     return 0;
 }
 
