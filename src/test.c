@@ -6,6 +6,7 @@
 
 static j65_parser state;
 static int passes, failures;
+static char buf[80];
 
 #define MAGIC 0x2badbeef
 
@@ -437,6 +438,23 @@ static void run_test (const event_check *events, size_t len) {
     print_pass();
 }
 
+static void depth_test (uint8_t specified, uint8_t expected) {
+    uint8_t actual;
+
+    snprintf (buf, sizeof (buf), "depth test (%u):", specified);
+    printf ("%-18s", buf);
+
+    j65_init (&state, NULL, NULL, specified);
+    actual = j65_get_max_depth (&state);
+
+    if (actual != expected) {
+        print_fail ();
+        printf ("Got %u but expected %u\n", actual, expected);
+    } else {
+        print_pass ();
+    }
+}
+
 #define TEST(x) run_test (x, sizeof(x) / sizeof(x[0]))
 
 int main (int argc, char **argv) {
@@ -489,6 +507,13 @@ int main (int argc, char **argv) {
     TEST(test44);
     TEST(test45);
     TEST(test46);
+
+    depth_test (0, 224);
+    depth_test (1, 1);
+    depth_test (16, 16);
+    depth_test (123, 123);
+    depth_test (224, 224);
+    depth_test (255, 224);
 
     if (failures > 0)
         color = 31;             /* red */
