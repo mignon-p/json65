@@ -58,6 +58,8 @@ static int do_test (void) {
         return 1;
     }
 
+    j65_free_tree (&tree);
+
     return 0;
 }
 
