@@ -29,10 +29,10 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
             tree->add_child = false;
         } else {
             tree->current = tree->current->parent;
-            if (tree->current->parent &&
-                tree->current->parent->node_type == J65_KEY) {
-                tree->current = tree->current->parent;
-            }
+        }
+        if (tree->current->parent &&
+            tree->current->parent->node_type == J65_KEY) {
+            tree->current = tree->current->parent;
         }
         return 0;
     case J65_NUMBER:
