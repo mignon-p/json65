@@ -661,8 +661,8 @@ descend:
         bcs pop_and_error
         getstate st::parser_st2
         jsr push_state_stack
+        bcs pop_and_error
         pla
-        bcs error2
         tax
         lda close_states,x
         putstate st::parser_st
