@@ -79,7 +79,12 @@ int __fastcall__ j65_print_tree (j65_node *root, FILE *f) {
             if (direction == DESCENDING) {
                 fputc (c1, f);
                 next = n->u.child;
-                next_direction = DESCENDING;
+                if (next) {
+                    next_direction = DESCENDING;
+                } else {
+                    next = n;
+                    next_direction = ASCENDING;
+                }
                 print_comma = false;
             } else {
                 fputc (c2, f);
