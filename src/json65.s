@@ -252,7 +252,7 @@ loop:   lda jlen+1
         sub #1                  ; decrement jlen by 256
         sta jlen+1
         cpx #J65_WANT_MORE
-        beq done                ; error or success; don't need to parse more
+        bne done                ; error or success; don't need to parse more
         inc inbuf+1             ; add 256 to inbuf
         jmp loop
 leftovers:                      ; hi byte of jlen is zero
