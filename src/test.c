@@ -272,6 +272,26 @@ static const event_check test44[] = {
     { J65_END_OBJ,           0, NULL,             0 },
 };
 
+static const event_check test45[] = {
+    { J65_DONE, 45, "[[[[]]]]", 0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_END_ARRAY,         0, NULL,             0 },
+    { J65_END_ARRAY,         0, NULL,             0 },
+    { J65_END_ARRAY,         0, NULL,             0 },
+    { J65_END_ARRAY,         0, NULL,             0 },
+};
+
+static const event_check test46[] = {
+    { J65_NESTING_TOO_DEEP, 46, "[[[[[]]]]]", 0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+    { J65_START_ARRAY,       0, NULL,             0 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -386,7 +406,8 @@ static void run_test (const event_check *events, size_t len) {
     ctx.len = len;
     ctx.pos = 1;
 
-    j65_init (&state, (void *) &ctx, callback, 255);
+    /* Use a small nesting depth to make it easy to test. */
+    j65_init (&state, (void *) &ctx, callback, 4);
     ret = j65_parse(&state, str, strlen(str));
 
     if (ret == J65_USER_ERROR) {
@@ -466,6 +487,8 @@ int main (int argc, char **argv) {
     TEST(test42);
     TEST(test43);
     TEST(test44);
+    TEST(test45);
+    TEST(test46);
 
     if (failures > 0)
         color = 31;             /* red */
