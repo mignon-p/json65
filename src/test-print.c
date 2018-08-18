@@ -16,8 +16,6 @@ static int do_test (void) {
     FILE *f;
     int ret;
 
-    printf ("starting parse\n");
-
     j65_init_tree (&tree);
     j65_init (&parser, &tree, j65_tree_callback, 16);
     len = strlen (buf1);
@@ -26,8 +24,6 @@ static int do_test (void) {
         fprintf (stderr, "status %d\n", status);
         return 1;
     }
-
-    printf ("finished parse\n");
 
     f = fopen (outfile, "w");
     if (! f) {
@@ -38,8 +34,6 @@ static int do_test (void) {
     ret = j65_print_tree (tree.root, f);
     fputc ('\n', f);
     fclose (f);
-
-    printf ("printed tree\n");
 
     if (ret < 0) {
         fprintf (stderr, "Error writing file\n");
@@ -63,8 +57,6 @@ static int do_test (void) {
         fprintf (stderr, "strings not equal:\n%s%s\n", buf1, buf2);
         return 1;
     }
-
-    printf ("Done!\n");
 
     j65_free_tree (&tree);
 
