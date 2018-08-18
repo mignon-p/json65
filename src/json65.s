@@ -1619,6 +1619,7 @@ get_long:
         stx ptr1+1
         lda #$ff
         sub (ptr1),y
+        ldx #0
         rts
 .endproc                ; _j65_get_max_depth
 
