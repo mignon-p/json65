@@ -116,6 +116,9 @@ build_program({'prog' => "$test/test"},
               "$src/json65.s", "$test/test.c");
 build_program({'prog' => "$test/test-string"},
               "$src/json65-string.s", "$test/test-string.c");
+build_program({'prog' => "$test/test-tree"},
+              "$src/json65.s", "$src/json65-string.s", "$src/json65-tree.c",
+              "$test/test-tree.c");
 build_program({'prog' => "$test/test-quote"},
               "$src/json65-quote.s", "$test/test-quote.c");
 build_program({'prog' => "$test/test-print"},
@@ -137,6 +140,7 @@ chdir ($test);
 # Run tests on sim65
 run_test ("test");
 run_test ("test-string");
+run_test ("test-tree");
 run_test ("test-print");
 
 # test-quote is not self-checking, and its functionality is subsumed
