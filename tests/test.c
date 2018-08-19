@@ -294,6 +294,16 @@ static const event_check test46[] = {
     { J65_START_ARRAY,       0, NULL,             0, 4 },
 };
 
+static const event_check test47[] = {
+    { J65_PARSE_ERROR, 47, "[\n    \"an\",\n    \"extra\",\n    \"comma\",\n]", 4, 0 },
+    { J65_START_ARRAY,       0, NULL,             0, 1 },
+    { J65_STRING,            0, "an",             1, 1 },
+    { J65_STRING,            0, "extra",          2, 1 },
+    { J65_STRING,            0, "comma",          3, 1 },
+    /* shouldn't get this far */
+    { J65_END_ARRAY,         0, NULL,             4, 1 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -517,6 +527,7 @@ int main (int argc, char **argv) {
     TEST(test44);
     TEST(test45);
     TEST(test46);
+    TEST(test47);
 
     depth_test (0, 224);
     depth_test (1, 1);
