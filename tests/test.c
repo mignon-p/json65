@@ -300,8 +300,6 @@ static const event_check test47[] = {
     { J65_STRING,            0, "an",             1, 1 },
     { J65_STRING,            0, "extra",          2, 1 },
     { J65_STRING,            0, "comma",          3, 1 },
-    /* shouldn't get this far */
-    { J65_END_ARRAY,         0, NULL,             4, 1 },
 };
 
 static const char *event_name (uint8_t event) {

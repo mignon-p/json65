@@ -695,7 +695,7 @@ disp_start_string:
         putstate st::str_idx
         jmp nextchar
 disp_comma_array:
-        lda #par_ready_or_close_array
+        lda #par_ready
 dca1:   putstate st::parser_st
         jmp nextchar
 disp_comma_object:
