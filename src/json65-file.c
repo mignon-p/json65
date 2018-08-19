@@ -49,9 +49,16 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
     buflen = scratch_len - sizeof (j65_parser);
 
     j65_init (p, ctx, cb, max_depth);
+    /* I am having a weird problem with ftell returning 512 when
+    ** I am at the beginning of the file.  Until I can figure that
+    ** out, just assume that f is at the beginning of the file. */
+#if 1
+    origin = 0;
+#else
     origin = ftell (f);
     if (origin < 0)
         goto io_error;
+#endif
 
     do {
         size = fread (buf, 1, buflen, f);
