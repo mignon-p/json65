@@ -88,17 +88,21 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
 
     width--;
     offset = j65_get_line_offset (p);
+    fprintf (err, "offset = %lu\n", offset);
     if (column_num >= width) {
         offset += (column_num - (width - 1));
         column_num = width - 1;
     }
 
+    fprintf (err, "offset = %lu, origin = %lu\n", offset, origin);
     if (fseek (f, origin + offset, SEEK_SET) < 0)
         goto io_error;
 
     size = fread (buf, 1, width, f);
+    fprintf (err, "fread = %u, feof = %u, ferror = %u\n", size, feof (f), ferror (f));
     buf[size] = 0;
     size = strcspn (buf, "\r\n");
+    fprintf (err, "strcspn = %u\n", size);
     buf[size] = 0;
     fprintf (err, "%s\n", buf);
 
