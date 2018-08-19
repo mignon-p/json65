@@ -2,6 +2,8 @@
 #include <string.h>
 #include "json65-file.h"
 
+static const char insufficient_memory[] = "insufficient memory";
+
 static const char *get_errmsg (int8_t n) {
     switch (n) {
     case J65_PARSE_ERROR:        return "parse error";
@@ -37,8 +39,10 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
     const char *errmsg;
     uint32_t offset;
 
-    if (scratch_len < sizeof (j65_parser) + width + 1)
+    if (scratch_len < sizeof (j65_parser) + width + 1) {
+        fprintf (err, "%s %u\n", insufficient_memory, scratch_len);
         return J65_INSUFFICIENT_MEMORY;
+    }
 
     p = (j65_parser *) scratch;
     buf = ((char *) scratch) + sizeof (j65_parser);
@@ -76,6 +80,8 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
         fprintf (err, "exceeded max nesting depth of %u levels",
                  j65_get_max_depth (p));
     } else {
+        if (user_err_func == NULL)
+            user_err_func = j65_default_err_func;
         user_err_func (err, ctx, ret);
     }
     fputc ('\n', err);
@@ -107,4 +113,14 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
  io_error:
     fprintf (err, "%s: %s\n", filename, _stroserror (_oserror));
     return J65_IO_ERROR;
+}
+
+void __fastcall__ j65_default_err_func (FILE *err,
+                                        void *ctx,
+                                        int8_t status) {
+    if (status == J65_INSUFFICIENT_MEMORY) {
+        fputs (insufficient_memory, err);
+    } else {
+        fprintf (err, "Unknown error code %d", status);
+    }
 }
