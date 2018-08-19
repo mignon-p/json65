@@ -79,7 +79,7 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
     line_num = j65_get_line_number (p);
     column_num = j65_get_column_number (p);
 
-    fprintf (err, "%s:%u:%u: ", filename, line_num + 1, column_num + 1);
+    fprintf (err, "%s:%lu:%lu: ", filename, line_num + 1, column_num + 1);
     errmsg = get_errmsg (ret);
     if (errmsg != NULL) {
         fputs (errmsg, err);
