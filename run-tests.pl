@@ -15,6 +15,8 @@ my $off = "\e[0m";
 
 my %test_results = ();
 
+my $total_bytes = 0;
+
 sub mysystem {
     my @cmd = @_;
     print join(" ", @cmd), "\n";
@@ -74,6 +76,39 @@ sub run_test {
     $test_results{$t} = mysystem_nonfatal ("sim65", $t);
 }
 
+sub parse_map {
+    my $map = $_[0];
+    my $name = "";
+    my $size = 0;
+    my %result = ();
+
+    open F, $map or die;
+    while (<F>) {
+        chomp;
+        if (/^([^:\s]+):$/) {
+            $name = $1;
+            $size = 0;
+        } elsif (/^\s+[A-Z].* Size\=(\w+)/) {
+            my $sz = hex ($1);
+            $size += $sz;
+            $result{$name} = $size;
+        } elsif (/^$/) {
+            last;
+        }
+    }
+    close F;
+
+    return \%result;
+}
+
+sub print_size {
+    my ($sizes, $obj) = @_;
+    my $size = $sizes->{$obj};
+
+    printf "%-15s %4u bytes\n", $obj, $size;
+    $total_bytes += $size;
+}
+
 print_heading "Building tests";
 
 # Tests which can be built for sim65
@@ -107,6 +142,19 @@ run_test ("test-print");
 # test-quote is not self-checking, and its functionality is subsumed
 # by test-print, so there's no need to run it
 #run_test ("test-quote");
+
+print_heading "Size summary";
+
+my $print_map = parse_map ("test-print.map");
+my $file_map = parse_map ("testfile.system.map");
+
+print_size ($print_map, "json65.o");
+print_size ($print_map, "json65-string.o");
+print_size ($print_map, "json65-tree.o");
+print_size ($print_map, "json65-quote.o");
+print_size ($print_map, "json65-print.o");
+print_size ($file_map,  "json65-file.o");
+printf "%-15s %4u bytes\n", "total", $total_bytes;
 
 my $failures = 0;
 
