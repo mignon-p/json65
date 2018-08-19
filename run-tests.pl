@@ -6,7 +6,7 @@ my $root = $FindBin::Bin;
 chdir ($root);
 
 my $src = "src";
-my $test = "src";
+my $test = "tests";
 
 my $blue = "\e[34m";
 my $green = "\e[32m";
