@@ -7,8 +7,8 @@ my @schars =
 
 my ($none, $lsq, $lcur, $rsq, $rcur, $colon, $comma, $quote) = @schars;
 
-my ($rdy, $rdy_ca, $key_co, $ncolon, $ncomma_ca, $ncomma_co, $done) =
-    (0, 1, 2, 3, 4, 5, 6);
+my ($rdy, $rdy_ca, $key, $key_co, $ncolon, $ncomma_ca, $ncomma_co, $done) =
+    (0, 1, 2, 3, 4, 5, 6, 7);
 
 my ($perr, $ichar) =
     qw(disp_parse_error disp_illegal_char);
@@ -27,6 +27,7 @@ my ($comarr, $comobj, $dcolon) =
 my %table = ();
 
 my @default = ($perr, $perr, $perr, $perr, $perr, $perr, $perr, $perr);
+$default[$key] = $xstr;
 $default[$key_co] = $xstr;
 $default[$ncolon] = $xcolon;
 $default[$ncomma_ca] = $xcomma;
@@ -54,6 +55,7 @@ foreach my $state ($rdy, $rdy_ca) {
 }
 
 $table{$rsq}[$rdy_ca]   = $earr;
+$table{$quote}[$key] = $sstr;
 $table{$quote}[$key_co] = $sstr;
 $table{$rcur}[$key_co]  = $eobj;
 $table{$colon}[$ncolon] = $dcolon;

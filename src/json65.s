@@ -88,9 +88,11 @@
 .endenum
 
 ;; parser state (should fit in 3 bits; otherwise need to change l_ready)
+;; (order needs to match dispatch_tab and literal_errors)
 .enum
         par_ready
         par_ready_or_close_array
+        par_key
         par_key_or_close_object
         par_need_colon
         par_need_comma_or_close_array
@@ -718,13 +720,13 @@ flags_prop_lit_or_num:
         .byte prop_lit | prop_int | prop_num
 
 .define dt_none  disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1
-.define dt_lsq   disp_start_array-1,disp_start_array-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
-.define dt_lcur  disp_start_obj-1,disp_start_obj-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
-.define dt_rsq   disp_parse_error-1,disp_end_array-1,disp_exp_obj_end-1,disp_exp_colon-1,disp_end_array-1,disp_exp_obj_end-1,disp_parse_error-1,disp_parse_error-1
-.define dt_rcur  disp_parse_error-1,disp_exp_array_end-1,disp_end_obj-1,disp_exp_colon-1,disp_exp_array_end-1,disp_end_obj-1,disp_parse_error-1,disp_parse_error-1
-.define dt_colon disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
-.define dt_comma disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_exp_colon-1,disp_comma_array-1,disp_comma_object-1,disp_parse_error-1,disp_parse_error-1
-.define dt_quote disp_start_string-1,disp_start_string-1,disp_start_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1,disp_parse_error-1
+.define dt_lsq   disp_start_array-1,disp_start_array-1,disp_exp_string-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1
+.define dt_lcur  disp_start_obj-1,disp_start_obj-1,disp_exp_string-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1
+.define dt_rsq   disp_parse_error-1,disp_end_array-1,disp_exp_string-1,disp_exp_obj_end-1,disp_exp_colon-1,disp_end_array-1,disp_exp_obj_end-1,disp_parse_error-1
+.define dt_rcur  disp_parse_error-1,disp_exp_array_end-1,disp_exp_string-1,disp_end_obj-1,disp_exp_colon-1,disp_exp_array_end-1,disp_end_obj-1,disp_parse_error-1
+.define dt_colon disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_exp_string-1,disp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1
+.define dt_comma disp_parse_error-1,disp_parse_error-1,disp_exp_string-1,disp_exp_string-1,disp_exp_colon-1,disp_comma_array-1,disp_comma_object-1,disp_parse_error-1
+.define dt_quote disp_start_string-1,disp_start_string-1,disp_start_string-1,disp_start_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1
 dispatch_tab_l:
         .lobytes dt_none
         .lobytes dt_lsq
@@ -758,7 +760,7 @@ close_states:
         .byte par_ready_or_close_array, par_need_comma_or_close_array
 
 literal_errors:                 ; needs to match parser state enum
-        .byte 0, 0, J65_EXPECTED_STRING, J65_EXPECTED_COLON
+        .byte 0, 0, J65_EXPECTED_STRING, J65_EXPECTED_STRING, J65_EXPECTED_COLON
         .byte J65_EXPECTED_COMMA, J65_EXPECTED_COMMA, J65_PARSE_ERROR
 
         .code
