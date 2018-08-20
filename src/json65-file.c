@@ -51,7 +51,11 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
     j65_init (p, ctx, cb, max_depth);
     /* I am having a weird problem with ftell returning 512 when
     ** I am at the beginning of the file.  Until I can figure that
-    ** out, just assume that f is at the beginning of the file. */
+    ** out, just assume that f is at the beginning of the file.
+    **
+    ** The bug report is here:
+    ** https://github.com/cc65/cc65/issues/722
+    */
 #if 1
     origin = 0;
 #else

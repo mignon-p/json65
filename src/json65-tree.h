@@ -6,7 +6,7 @@
 
 /* in addition to the status codes from j65_status */
 enum {
-    J65_OUT_OF_MEMORY = -1,
+    J65_OUT_OF_MEMORY = -1,     /* malloc returned NULL */
 };
 
 /*

@@ -136,6 +136,11 @@ If you wish to build and run the tests, simply run the `run-test.pl`
 Perl script at the top level of the repository.  (It takes no
 arguments.)  You'll need to have the [cc65][7] toolchain installed.
 
+Note: version 2.17 and earlier of [sim65][5] have a
+[bug in the implementation of the BIT instruction][8], so the tests
+will fail.  You'll need a more recent version to get the tests to
+pass.
+
 [1]: https://cc65.github.io/doc/ca65.html
 [2]: https://cc65.github.io/doc/cc65-intern.html
 [3]: https://tools.ietf.org/html/rfc8259#section-8.1
@@ -143,3 +148,4 @@ arguments.)  You'll need to have the [cc65][7] toolchain installed.
 [5]: https://cc65.github.io/doc/sim65.html
 [6]: https://github.com/cc65/wiki/wiki/Bigger-Projects
 [7]: https://cc65.github.io/cc65/
+[8]: https://github.com/cc65/cc65/pull/712
