@@ -303,7 +303,7 @@ static const event_check test47[] = {
 };
 
 static const event_check test48[] = {
-    { J65_PARSE_ERROR, 48, "{ \"extra\": \"comma\", }", 0, 0 },
+    { J65_EXPECTED_STRING,  48, "{ \"extra\": \"comma\", }", 0, 0 },
     { J65_START_OBJ,         0, NULL,             0, 1 },
     { J65_KEY,               0, "extra",          0, 1 },
     { J65_STRING,            0, "comma",          0, 1 },

@@ -701,7 +701,7 @@ disp_comma_array:
 dca1:   putstate st::parser_st
         jmp nextchar
 disp_comma_object:
-        lda #par_key_or_close_object
+        lda #par_key
         jmp dca1
 disp_colon:
         lda #par_ready
@@ -876,6 +876,8 @@ skipescape:
         cmp #par_ready_or_close_array
         beq p_ready
         cmp #par_key_or_close_object
+        beq p_key
+        cmp #par_key
         beq p_key
         lda #J65_PARSE_ERROR
         sec
