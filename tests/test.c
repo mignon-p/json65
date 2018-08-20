@@ -302,6 +302,13 @@ static const event_check test47[] = {
     { J65_STRING,            0, "comma",          3, 1 },
 };
 
+static const event_check test48[] = {
+    { J65_PARSE_ERROR, 48, "{ \"extra\": \"comma\", }", 0, 0 },
+    { J65_START_OBJ,         0, NULL,             0, 1 },
+    { J65_KEY,               0, "extra",          0, 1 },
+    { J65_STRING,            0, "comma",          0, 1 },
+};
+
 static const char *event_name (uint8_t event) {
     switch (event) {
     case J65_NULL        : return "J65_NULL";
@@ -526,6 +533,7 @@ int main (int argc, char **argv) {
     TEST(test45);
     TEST(test46);
     TEST(test47);
+    TEST(test48);
 
     depth_test (0, 224);
     depth_test (1, 1);
