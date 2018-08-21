@@ -46,23 +46,23 @@
         ldy #0
 loop1:  sty startidx
 loop2:  lda (strptr),y
-        cmp #'#'
+        cmp #'#'                ; check whether character is special
         bge higher
         and #$fe
         cmp #' '
         bne special_char
-okay_char:
+okay_char:                      ; character does not need to be escaped
         iny
         jmp loop2
 higher: cmp #$5c                ; backslash
         bne okay_char
-special_char:
+special_char:                   ; character needs to be escaped
         sty saveidx
         tya
         sub startidx
-        beq skip_fputs
+        beq skip_fwrite         ; skip fwrite if "count" would be 0
         sta len
-        ldx strptr+1
+        ldx strptr+1            ; add strptr to startidx to make "buf" argument
         lda strptr
         add startidx
         bcc skip_inx
@@ -78,18 +78,18 @@ skip_inx:
         lda fileptr             ; argument "f" passed in ax
         ldx fileptr+1
         jsr _fwrite
-skip_fputs:
+skip_fwrite:
         ldy saveidx
         lda (strptr),y
-        beq done
-        pha
+        beq done                ; terminating NUL character
+        pha                     ; save character to be escaped
         lda #$5c                ; print backslash
         ldx #0
         jsr pushax              ; push argument "c"
         lda fileptr             ; argument "f" passed in ax
         ldx fileptr+1
         jsr _fputc
-        pla
+        pla                     ; restore character to be escaped
         sta character
         ldx #6                  ; see if there is a short escape for character
 esc_loop:
