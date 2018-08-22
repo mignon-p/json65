@@ -75,12 +75,11 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
         tree->root = n;
         tree->current = n;
     } else if (tree->add_child) {
+        tree->current->u.ptrs.child = n;
         if (tree->current->node_type == J65_KEY) {
-            tree->current->u.ptrs.child = n;
             if (event == J65_START_OBJ || event == J65_START_ARRAY)
                 tree->current = n;
         } else {
-            tree->current->u.ptrs.child = n;
             tree->current = n;
         }
     } else {
@@ -142,15 +141,10 @@ void __fastcall__ j65_free_tree (j65_tree *t) {
     while (n != NULL) {
         switch (n->node_type) {
         case J65_KEY:
-            follow = n->u.ptrs.child;
-            n->u.ptrs.child = NULL;
-            goto check_follow;
         case J65_START_OBJ:
         case J65_START_ARRAY:
             follow = n->u.ptrs.child;
             n->u.ptrs.child = NULL;
-            /* fall thru */
-        check_follow:
             if (follow != NULL)
                 break;
             /* fall thru */
