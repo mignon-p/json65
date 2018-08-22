@@ -64,10 +64,10 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
     case J65_INTEGER:
         n->u.integer = j65_get_integer (p);
         break;
-    case J65_KEY:               /* (u.string is the same as u.pair.key) */
+    case J65_KEY:
     case J65_NUMBER:
     case J65_STRING:
-        n->u.string = str;
+        n->u.ptrs.string = str;
         break;
     }
 
@@ -76,11 +76,11 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
         tree->current = n;
     } else if (tree->add_child) {
         if (tree->current->node_type == J65_KEY) {
-            tree->current->u.pair.value = n;
+            tree->current->u.ptrs.child = n;
             if (event == J65_START_OBJ || event == J65_START_ARRAY)
                 tree->current = n;
         } else {
-            tree->current->u.child = n;
+            tree->current->u.ptrs.child = n;
             tree->current = n;
         }
     } else {
@@ -117,14 +117,14 @@ j65_node * __fastcall__ j65_find_interned_key (j65_node *object,
                                                const char *key) {
     j65_node *n;
     if (object->node_type == J65_START_OBJ)
-        n = object->u.child;
+        n = object->u.ptrs.child;
     else if (object->node_type == J65_KEY)
         n = object;
     else
         return NULL;
 
     while (n != NULL) {
-        if (n->u.pair.key == key)
+        if (n->u.ptrs.string == key)
             return n;
         n = n->next;
     }
@@ -142,13 +142,13 @@ void __fastcall__ j65_free_tree (j65_tree *t) {
     while (n != NULL) {
         switch (n->node_type) {
         case J65_KEY:
-            follow = n->u.pair.value;
-            n->u.pair.value = NULL;
+            follow = n->u.ptrs.child;
+            n->u.ptrs.child = NULL;
             goto check_follow;
         case J65_START_OBJ:
         case J65_START_ARRAY:
-            follow = n->u.child;
-            n->u.child = NULL;
+            follow = n->u.ptrs.child;
+            n->u.ptrs.child = NULL;
             /* fall thru */
         check_follow:
             if (follow != NULL)

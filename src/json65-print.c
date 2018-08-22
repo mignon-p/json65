@@ -50,19 +50,19 @@ int __fastcall__ j65_print_tree (j65_node *root, FILE *f) {
             fprintf (f, "%ld", n->u.integer);
             break;
         case J65_NUMBER:
-            fputs (n->u.string, f);
+            fputs (n->u.ptrs.string, f);
             break;
         case J65_STRING:
             fputc ('\"', f);
-            j65_print_escaped (n->u.string, f);
+            j65_print_escaped (n->u.ptrs.string, f);
             fputc ('\"', f);
             break;
         case J65_KEY:
             if (direction == DESCENDING) {
                 fputc ('\"', f);
-                j65_print_escaped (n->u.pair.key, f);
+                j65_print_escaped (n->u.ptrs.string, f);
                 fputs ("\":", f);
-                next = n->u.pair.value;
+                next = n->u.ptrs.child;
                 next_direction = DESCENDING;
                 print_comma = false;
             }
@@ -78,7 +78,7 @@ int __fastcall__ j65_print_tree (j65_node *root, FILE *f) {
             }
             if (direction == DESCENDING) {
                 fputc (c1, f);
-                next = n->u.child;
+                next = n->u.ptrs.child;
                 if (next) {
                     next_direction = DESCENDING;
                 } else {

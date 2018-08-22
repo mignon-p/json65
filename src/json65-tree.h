@@ -87,9 +87,10 @@ struct j65_node {
     j65_node *next;
     union {
         int32_t integer;        /* J65_INTEGER */
-        const char *string;     /* J65_NUMBER or J65_STRING */
-        j65_node *child;        /* J65_START_OBJ or J65_START_ARRAY */
-        j65_pair pair;          /* J65_KEY */
+        struct {
+            const char *string; /* J65_KEY, J65_NUMBER, or J65_STRING */
+            j65_node *child;    /* J65_KEY, J65_START_OBJ, or J65_START_ARRAY */
+        } ptrs;
     } u;
 };
 
