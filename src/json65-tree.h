@@ -34,27 +34,6 @@ typedef struct {
 typedef struct j65_node j65_node;
 
 /*
-  This is the data associated with a node of type J65_KEY.
-  The J65_KEY node contains the name of the key (as a string),
-  and it also points to another node, which is the value
-  associated with the key.
-
-  The value node will not have any siblings (its next pointer
-  will always be NULL).  If the value node had siblings, that
-  would imply that the key has multiple values, which is not
-  possible.
-
-  The value node may be of any type except J65_KEY.  A J65_KEY
-  node will only ever be a child of a J65_START_OBJ node,
-  and all of the siblings of a J65_KEY node will also be
-  J65_KEY nodes.
- */
-typedef struct {
-    const char *key;
-    j65_node *value;
-} j65_pair;
-
-/*
   j65_node represents a value parsed from the JSON file.
 
   The node_type is recycled from the j65_event enumeration
