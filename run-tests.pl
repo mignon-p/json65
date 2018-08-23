@@ -29,6 +29,7 @@ chdir ($root);
 
 my $src = "src";
 my $test = "tests";
+my $example = "examples";
 
 my $blue = "\e[34m";
 my $green = "\e[32m";
@@ -156,6 +157,13 @@ build_program({'prog' => "$test/testfile.system",
                'target' => 'apple2',
                'config' => 'apple2-system.cfg'},
               "$src/json65.s", "$src/json65-file.c", "$test/test-file.c");
+build_program({'prog' => "$example/example.system",
+               'target' => 'apple2',
+               'config' => 'apple2-system.cfg'},
+              "$src/json65.s", "$src/json65-file.c",
+              "$src/json65-string.s", "$src/json65-tree.c",
+              "$src/json65-quote.s", "$src/json65-print.c",
+              "$example/example.c");
 
 chdir ($test);
 

@@ -1,0 +1,9 @@
+{
+    "apple": 2,
+    "banana": {
+        "color": "yellow",
+        "edible": true,
+        "sieverts": 9.82e-8
+    },
+    "raspberry": 3.14519
+}
