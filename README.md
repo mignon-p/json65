@@ -9,6 +9,9 @@ So, here is my JSON parser.  The core parser is written entirely in
 However, it is meant to be called from C, and uses the
 [cc65 calling convention][2] (specifically, the `fastcall` convention).
 
+JSON65 should work on any processor in the 6502 family.  (It does not
+use any 65C02 instructions.)
+
 ## Parser (json65.h)
 
 JSON65 is an event-driven (SAX-style) parser, so the parser is given a
@@ -139,7 +142,14 @@ arguments.)  You'll need to have the [cc65][7] toolchain installed.
 Note: version 2.17 and earlier of [sim65][5] have a
 [bug in the implementation of the BIT instruction][8], so the tests
 will fail.  You'll need a more recent version to get the tests to
-pass.
+pass.  (This only affects the simulation of the tests.  If you plan on
+running JSON65 on real hardware, or on an emulator *other* than sim65,
+then you'll be fine with an older version of cc65.)
+
+## License
+
+JSON65 is licensed under the [zlib/libpng license](LICENSE.txt), which
+is approved by the [OSI][9] and the [FSF][10].
 
 [1]: https://cc65.github.io/doc/ca65.html
 [2]: https://cc65.github.io/doc/cc65-intern.html
@@ -149,3 +159,5 @@ pass.
 [6]: https://github.com/cc65/wiki/wiki/Bigger-Projects
 [7]: https://cc65.github.io/cc65/
 [8]: https://github.com/cc65/cc65/pull/712
+[9]: https://opensource.org/licenses/Zlib
+[10]: https://www.gnu.org/licenses/license-list.en.html#ZLib
