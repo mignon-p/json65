@@ -12,6 +12,12 @@ However, it is meant to be called from C, and uses the
 JSON65 should work on any processor in the 6502 family.  (It does not
 use any 65C02 instructions.)
 
+The assembly language parts of JSON65 use the zero page locations used
+by `cc65`, in a way which is compatible with the C calling convention.
+
+JSON65 should work on any target supported by the `cc65` toolchain.  I
+have tested it on `sim65` and on an unenhanced Apple //e.
+
 ## Parser (json65.h)
 
 JSON65 is an event-driven (SAX-style) parser, so the parser is given a
@@ -56,13 +62,39 @@ will provide the long to the callback.  All other numbers
 long) are provided to the callback as a string.  (Like strings,
 numbers cannot be more than 255 digits long.)
 
-## Tree interface
+The callback function may return an error if it wishes.  This will
+cause parsing to stop immediately, and the error code returned by the
+callback will be returned by `j65_parse()`.  Error codes are negative
+numbers, and the user may use the codes from `J65_USER_ERROR` to
+`-1`, inclusive, for their own error codes.
+
+## Tree interface (json65-tree.h)
 
 If you use the event-driver parser, you'll need to build your own data
 structure (or otherwise handle the data somehow) as the events come
 in.  If you don't want to do that, you can use the tree interface
-instead, which builds up a data structure for you.  This only works
-for small files, because the entire tree has to fit in memory at once.
+(`json65-tree.h`) instead, which builds up a data structure for you.
+This only works for small files, because the entire tree has to fit in
+memory at once.
+
+Unlike the event-based parser, the tree interface uses dynamic memory
+allocation.
+
+## Printing JSON (json65-print.h)
+
+Mostly, JSON65 is a parser.  However, it does have some support for
+printing JSON back to a file, in `json65-print.h`.  The function
+`j65_print_tree()` will print a JSON tree (from the tree interface in
+`json65-tree.h`) to a given filehandle.  It prints the entire JSON
+tree on a single line with no whitespace.  This is the most compact
+format for a machine-readable JSON file, but it is not particularly
+human-readable.
+
+If you write your own code to print JSON, either because you want to
+pretty-print it, or because you are using a data structure other than
+`j65_node`, you may still want to use the function
+`j65_print_escaped()` from `json65-quote.h`.  It handles escaping a
+string using the JSON escape sequences.
 
 ## API documentation
 
