@@ -109,7 +109,7 @@ int main (int argc, char **argv) {
     ** the tree.  If we want to know the value associated with
     ** the key "banana", we need to look at the key's child node.
     */
-    banana_value = banana->u.ptrs.child;
+    banana_value = banana->child;
 
     /* Now print the value associated with the key "banana". */
     printf ("Here are some fun facts about bananas, from line %lu of %s:\n",

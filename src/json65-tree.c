@@ -82,16 +82,16 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
         n->parent = tree->current->parent;
     n->next = NULL;
 
-    n->u.integer = 0;           /* clears all fields of union to NULL */
+    n->integer = 0;           /* clears all fields of union to NULL */
 
     switch (event) {
     case J65_INTEGER:
-        n->u.integer = j65_get_integer (p);
+        n->integer = j65_get_integer (p);
         break;
     case J65_KEY:
     case J65_NUMBER:
     case J65_STRING:
-        n->u.ptrs.string = str;
+        n->string = str;
         break;
     }
 
@@ -99,7 +99,7 @@ int8_t __fastcall__ j65_tree_callback (j65_parser *p, uint8_t event) {
         tree->root = n;
         tree->current = n;
     } else if (tree->add_child) {
-        tree->current->u.ptrs.child = n;
+        tree->current->child = n;
         if (tree->current->node_type == J65_KEY) {
             if (event == J65_START_OBJ || event == J65_START_ARRAY)
                 tree->current = n;
@@ -140,14 +140,14 @@ j65_node * __fastcall__ j65_find_interned_key (j65_node *object,
                                                const char *key) {
     j65_node *n;
     if (object->node_type == J65_START_OBJ)
-        n = object->u.ptrs.child;
+        n = object->child;
     else if (object->node_type == J65_KEY)
         n = object;
     else
         return NULL;
 
     while (n != NULL) {
-        if (n->u.ptrs.string == key)
+        if (n->string == key)
             return n;
         n = n->next;
     }
@@ -167,8 +167,8 @@ void __fastcall__ j65_free_tree (j65_tree *t) {
         case J65_KEY:
         case J65_START_OBJ:
         case J65_START_ARRAY:
-            follow = n->u.ptrs.child;
-            n->u.ptrs.child = NULL;
+            follow = n->child;
+            n->child = NULL;
             if (follow != NULL)
                 break;
             /* fall thru */

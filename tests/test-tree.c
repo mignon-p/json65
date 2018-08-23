@@ -52,21 +52,21 @@ static int do_test (size_t len) {
         return 1;
     }
 
-    n = n->u.ptrs.child;
+    n = n->child;
     n = j65_find_key (&tree, n, "linearCutoff");
     if (n == NULL) {
         fprintf (stderr, "couldn't find linearCutoff\n");
         return 1;
     }
 
-    n = n->u.ptrs.child;
+    n = n->child;
     node_type = n->node_type;
     if (node_type != J65_NUMBER) {
         fprintf (stderr, "%u != J65_NUMBER\n", node_type);
         return 1;
     }
 
-    str = n->u.ptrs.string;
+    str = n->string;
     if (0 != strcmp (str, "0.0078125")) {
         fprintf (stderr, "%s != 0.0078125\n", str);
         return 1;

@@ -93,8 +93,8 @@ struct j65_node {
         struct {
             const char *string; /* J65_KEY, J65_NUMBER, or J65_STRING */
             j65_node *child;    /* J65_KEY, J65_START_OBJ, or J65_START_ARRAY */
-        } ptrs;
-    } u;
+        };
+    };
 };
 
 /*
