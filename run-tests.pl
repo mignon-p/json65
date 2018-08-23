@@ -82,7 +82,7 @@ sub build_program {
     my $target = "sim6502";
     $target = $hash->{"target"} if (exists $hash->{"target"});
 
-    my @cmd = ("cl65", "-I$src", "-W-unused-param");
+    my @cmd = ("cl65", "-I$src", "-W-unused-param", "-O");
     push @cmd, '-t', $target;
     push @cmd, '-C', $hash->{"config"} if (exists $hash->{"config"});
     push @cmd, '-o', $prog;

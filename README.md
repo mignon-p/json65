@@ -87,12 +87,12 @@ size of the machine code of the implementation (`CODE` section plus
 `RODATA` section; none of the implementation files have any `DATA` or
 `BSS`).
 
-* [json65.h](src/json65.h) (2235 bytes) - The core, event-driven
+* [json65.h](src/json65.h) (2240 bytes) - The core, event-driven
   parser.  This is the only file that is required if you wish to build
   your own data structure.
 * [json65-string.h](src/json65-string.h) (291 bytes) - This implements
   a [string intern pool][4] which is used by the tree interface.
-* [json65-tree.h](src/json65-tree.h) (1918 bytes) - The tree
+* [json65-tree.h](src/json65-tree.h) (1300 bytes) - The tree
   interface, which builds up a tree data structure as the file is
   parsed.  You may then traverse the tree to your heart's content.
 * [json65-quote.h](src/json65-quote.h) (226 bytes) - This has a
@@ -100,10 +100,10 @@ size of the machine code of the implementation (`CODE` section plus
   escape sequences from the JSON specification.  It is used by the
   tree printer, but can also be used standalone if you are printing
   JSON files yourself without using the tree interface.
-* [json65-print.h](src/json65-print.h) (1006 bytes) - Prints a tree to
+* [json65-print.h](src/json65-print.h) (710 bytes) - Prints a tree to
   a file as JSON.  Use this if you are using the tree interface, and
   wish to write JSON files as well as read them.
-* [json65-file.h](src/json65-file.h) (1499 bytes) - Provides a helper
+* [json65-file.h](src/json65-file.h) (1357 bytes) - Provides a helper
   function to feed data to the parser from a file, in chunks, and to
   display error messages to the user (including printing the offending
   line, and printing a caret to indicate the offending position of the
