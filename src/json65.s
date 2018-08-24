@@ -194,6 +194,10 @@
 
         .code
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                             j65_init                             ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; void __fastcall__ j65_init(j65_state *s, void *ctx, j65_callback cb, uint8_t max_depth);
 .proc _j65_init
         sta tmp1                ; save max_depth
@@ -239,6 +243,10 @@ loop1:  lda (sp),y
         sta state+1
         jmp incsp6              ; tail call to remove args from stack
 .endproc                ; _j65_init
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                             j65_parse                            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; int8_t __fastcall__ j65_parse(j65_state *s, const char *buf, size_t len)
 .proc _j65_parse
@@ -1584,6 +1592,10 @@ stack_empty:
 done:   rts
 .endproc                ; inc_state_long
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                          j65_get_string                          ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; const char * __fastcall__ j65_get_string(const j65_state *s);
 ;; (string buffer is the second 256 bytes of state, so all we have
 ;; to do is increment the high byte of the argument)
@@ -1591,6 +1603,10 @@ done:   rts
         inx
         rts
 .endproc                ; _j65_get_string
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                          j65_get_length                          ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; uint8_t __fastcall__ j65_get_length(const j65_state *s);
 .proc _j65_get_length
@@ -1601,6 +1617,10 @@ done:   rts
         ldx #0
         rts
 .endproc                ; _j65_get_length
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                          j65_get_integer                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; int32_t __fastcall__ j65_get_integer(const j65_state *s);
 _j65_get_integer:
@@ -1622,11 +1642,19 @@ get_long:
         rts
         ; end _j65_get_long
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                        j65_get_line_offset                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; uint32_t __fastcall__ j65_get_line_offset(const j65_state *s);
 .proc _j65_get_line_offset
         ldy #st::line_off+3
         jmp get_long
 .endproc                ; _j65_get_line_offset
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                        j65_get_line_number                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; uint32_t __fastcall__ j65_get_line_number(const j65_state *s);
 .proc _j65_get_line_number
@@ -1634,11 +1662,19 @@ get_long:
         jmp get_long
 .endproc                ; _j65_get_line_number
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                       j65_get_column_number                      ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; uint32_t __fastcall__ j65_get_column_number(const j65_state *s);
 .proc _j65_get_column_number
         ldy #st::col_num+3
         jmp get_long
 .endproc                ; _j65_get_column_number
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                       j65_get_current_depth                      ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; uint8_t __fastcall__ j65_get_current_depth(const j65_state *s);
 .proc _j65_get_current_depth
@@ -1651,6 +1687,10 @@ get_long:
         rts
 .endproc                ; _j65_get_current_depth
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         j65_get_max_depth                        ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; uint8_t __fastcall__ j65_get_max_depth(const j65_state *s);
 .proc _j65_get_max_depth
         ldy #st::stack_min
@@ -1661,6 +1701,10 @@ get_long:
         ldx #0
         rts
 .endproc                ; _j65_get_max_depth
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                          j65_get_context                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; void * __fastcall__ j65_get_context(const j65_state *s);
 .proc _j65_get_context

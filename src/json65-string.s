@@ -55,6 +55,11 @@
         ;; 0-255 bytes of string
         ;; NUL byte
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         j65_init_strings                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; void __fastcall__ j65_init_strings (j65_strings *strs);
 .proc _j65_init_strings
         sta ptr1
         stx ptr1+1
@@ -67,6 +72,10 @@ loop:   sta (ptr1),y
         bne loop
         rts
 .endproc                ; _j65_init_strings
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         j65_intern_string                        ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; const char *j65_intern_string (j65_strings *strs, const char *str);
 .proc _j65_intern_string
@@ -167,6 +176,36 @@ copydone:
         rts
 .endproc                ; _j65_intern_string
 
+;; rotate accumulator left by 1.
+.macro rotate_left
+        cmp #$80
+        rol
+.endmacro               ; rotate_left
+
+;; hash the (NUL terminated) string pointed at by strptr.
+;; return hash in a and length in y.
+.proc hash_str
+        lda #0
+        tay
+loop:   sta t1
+        lda (strptr),y
+        beq done
+        iny
+        beq done0
+        add t1
+        rotate_left
+        rotate_left
+        rotate_left
+        jmp loop
+done0:  dey
+done:   lda t1
+        rts
+.endproc                ; hash_str
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         j65_free_strings                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; void __fastcall__ j65_free_strings (j65_strings *strs);
 .proc _j65_free_strings
         sta loptr
@@ -209,29 +248,3 @@ loop:   sty idx
         jmp freelink
 done:   rts
 .endproc                ; freelink
-
-;; rotate accumulator left by 1.
-.macro rotate_left
-        cmp #$80
-        rol
-.endmacro               ; rotate_left
-
-;; hash the (NUL terminated) string pointed at by strptr.
-;; return hash in a and length in y.
-.proc hash_str
-        lda #0
-        tay
-loop:   sta t1
-        lda (strptr),y
-        beq done
-        iny
-        beq done0
-        add t1
-        rotate_left
-        rotate_left
-        rotate_left
-        jmp loop
-done0:  dey
-done:   lda t1
-        rts
-.endproc                ; hash_str

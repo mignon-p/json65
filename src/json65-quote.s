@@ -55,6 +55,10 @@
         .endrep
 .endmacro               ; restore_regbank
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                         j65_print_escaped                        ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; void __fastcall__ j65_print_escaped (const char *str, FILE *f)
 .proc _j65_print_escaped
         sta t1
