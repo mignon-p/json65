@@ -146,7 +146,11 @@ int8_t __fastcall__ j65_parse_file (FILE *f,
     return ret;
 
  io_error:
-    fprintf (err, "%s: %s\n", filename, _stroserror (_oserror));
+    if (_oserror)
+        errmsg = _stroserror (_oserror);
+    else
+        errmsg = strerror (errno);
+    fprintf (err, "%s: %s\n", filename, errmsg);
     return J65_IO_ERROR;
 }
 

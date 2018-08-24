@@ -135,7 +135,7 @@ size of the machine code of the implementation (`CODE` section plus
 * [json65-print.h](src/json65-print.h) (710 bytes) - Prints a tree to
   a file as JSON.  Use this if you are using the tree interface, and
   wish to write JSON files as well as read them.
-* [json65-file.h](src/json65-file.h) (1357 bytes) - Provides a helper
+* [json65-file.h](src/json65-file.h) (1378 bytes) - Provides a helper
   function to feed data to the parser from a file, in chunks, and to
   display error messages to the user (including printing the offending
   line, and printing a caret to indicate the offending position of the
