@@ -183,6 +183,10 @@ then you'll be fine with an older version of cc65.)
 JSON65 is licensed under the [zlib/libpng license](LICENSE.txt), which
 is approved by the [OSI][9] and the [FSF][10].
 
+## Background
+
+For more information about how and why I wrote JSON65, see [my blog post][11].
+
 [1]: https://cc65.github.io/doc/ca65.html
 [2]: https://cc65.github.io/doc/cc65-intern.html
 [3]: https://tools.ietf.org/html/rfc8259#section-8.1
@@ -193,3 +197,4 @@ is approved by the [OSI][9] and the [FSF][10].
 [8]: https://github.com/cc65/cc65/pull/712
 [9]: https://opensource.org/licenses/Zlib
 [10]: https://www.gnu.org/licenses/license-list.en.html#ZLib
+[11]: https://funwithsoftware.org/posts/2021-03-03-json-on-the-apple-ii.html
