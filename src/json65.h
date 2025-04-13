@@ -137,7 +137,7 @@ typedef int8_t __fastcall__ (*j65_callback)(j65_parser *p, uint8_t event);
   parser.
 
   If max_depth is 0, then it will be set to the maximum allowable
-  value, which is 224.  So, if you do not wish to furhter limit the
+  value, which is 224.  So, if you do not wish to further limit the
   maximum depth, pass 0 for max_depth.  This means that the smallest
   value you can actually set max_depth to is 1, which means that you
   can only have a top-level array or object, but no arrays or objects
