@@ -44,6 +44,21 @@
         .export _j65_get_max_depth
         .export _j65_get_context
 
+;; Memory layout of the 512-byte j65_parser struct
+;; -------------------------------------------------------
+;; The 512 bytes are split into two consecutive 256-byte pages:
+;;
+;;   Page 0 (bytes   0-255): the 'st' struct at the bottom (sizeof(st) bytes),
+;;                            followed by the parser state stack growing
+;;                            downward from offset 255 toward offset sizeof(st).
+;;                            'state' (in ZP) points here.
+;;
+;;   Page 1 (bytes 256-511): the string/number accumulation buffer.
+;;                            'strbuf' (in ZP) points here; it is always
+;;                            state+256, i.e. state with the high byte
+;;                            incremented by 1.  This means _j65_get_string()
+;;                            can return the buffer address with a single INX.
+
 ;; zero page locations
         state     = regbank
         strbuf    = regbank + 2
@@ -135,22 +150,28 @@
 .endenum
 
 ;; state variables
+;; The parser state stack lives in the same 256-byte page immediately above
+;; these fixed fields.  stack_idx is the current top-of-stack offset (starts
+;; at 255 = empty; decrements on push, increments on pop).  stack_min is the
+;; lowest offset the stack may reach (= 256 - max_depth, clamped to at least
+;; sizeof(st) so the stack never collides with the fixed fields below it).
 .struct st
         callback   .word        ; these two must be first and in this order
         context    .word
-        file_off   .dword
-        line_off   .dword
-        line_num   .dword
-        col_num    .dword
-        long_val   .dword
-        lexer_st   .byte
-        parser_st  .byte
-        parser_st2 .byte
-        str_idx    .byte
-        stack_idx  .byte
-        flags      .byte
-        stack_min  .byte
-        prev_char  .byte
+        file_off   .dword       ; total bytes consumed so far
+        line_off   .dword       ; file_off at start of current line
+        line_num   .dword       ; 0-based current line number
+        col_num    .dword       ; bytes consumed on current line (before current char)
+        long_val   .dword       ; parsed integer value (for J65_INTEGER events)
+        lexer_st   .byte        ; current lexer state (lex_ready/literal/string/escape)
+        parser_st  .byte        ; current parser state (what token is expected next)
+        parser_st2 .byte        ; saved outer parser state (restored after a value)
+        str_idx    .byte        ; write cursor into string buffer (also = string length)
+        stack_idx  .byte        ; top-of-stack byte offset within page 0 (255 = empty)
+        flags      .byte        ; during literal scan: remaining candidate prop bits;
+                                ; during string scan: 1 if deferred \\ or \u present
+        stack_min  .byte        ; minimum allowed stack_idx (= 256 - max_depth)
+        prev_char  .byte        ; last consumed byte (used to detect CRLF pairs)
 .endstruct
 
 ;; loads a with specified state variable.  clobbers y.
@@ -199,6 +220,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; void __fastcall__ j65_init(j65_state *s, void *ctx, j65_callback cb, uint8_t max_depth);
+;;
+;; C stack frame at entry (sp points to bottom, growing upward):
+;;   sp+0 .. sp+1 : callback (cb)     -- stored directly into st::callback
+;;   sp+2 .. sp+3 : context  (ctx)    -- stored directly into st::context
+;;   sp+4 .. sp+5 : state pointer (s) -- the j65_parser to initialise
+;;   A             : max_depth         -- last arg in fastcall arrives in A
+;;
+;; regbank is caller-saved, so we temporarily borrow ptr1 to hold the old
+;; regbank value while we clobber 'state' (regbank) to point at 's'.
 .proc _j65_init
         sta tmp1                ; save max_depth
         lda state               ; save first 2 bytes of regbank
@@ -223,6 +253,10 @@ loop:   sta (state),y
         putstate st::parser_st2
         lda #$ff
         putstate st::stack_idx
+        ;; stack_min = max(sizeof(st), 256 - max_depth)
+        ;; Storing 256-max_depth as an 8-bit value is equivalent to 0-max_depth
+        ;; because 256 mod 256 = 0.  The clamp ensures the stack never grows
+        ;; into the fixed fields of the st struct.
         lda #0
         sub tmp1                ; subtract max depth from 256
         cmp #.sizeof(st)
@@ -249,6 +283,13 @@ loop1:  lda (sp),y
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; int8_t __fastcall__ j65_parse(j65_state *s, const char *buf, size_t len)
+;;
+;; The inner 'parse' routine uses an 8-bit index into inbuf, so it can only
+;; handle up to 256 bytes at a time.  This outer wrapper slices 'buf' into
+;; 256-byte chunks and calls parse() on each one.  inbuflast holds the index
+;; of the last valid byte (= length-1 for the final partial chunk, $FF for
+;; full 256-byte chunks).  After each full chunk, inbuf's high byte is
+;; incremented to advance to the next 256-byte page, and file_off is updated.
 .proc _j65_parse
         sta jlen
         stx jlen+1
@@ -477,10 +518,22 @@ charprops:
 
 ;; state, strbuf, inbuf, and inbuflast should be set up upon entry.
 ;; returns status in a.
+;;
+;; The main loop is a two-level state machine:
+;;   Outer level (lexer_st): tracks whether we are between tokens (lex_ready),
+;;     accumulating a literal/number (lex_literal), inside a string
+;;     (lex_string), or processing a string escape (lex_str_escape).
+;;     lexer_st is used as an index into lex_tab to dispatch to the right handler.
+;;   Inner level (parser_st): tracks what syntactic context we are in —
+;;     e.g. "expecting the first value", "expecting a comma or close bracket",
+;;     "expecting an object key", etc.
 .proc parse
         lda #0
         sta charidx
 parseloop:
+        ;; Dispatch based on lexer state via a two-byte (lo/hi) jump table.
+        ;; The PHA+RTS pattern is the standard 6502 indirect-jump-via-stack trick:
+        ;; push address-1 hi then lo, then RTS pops and jumps to address.
         getstate st::lexer_st
         tay
         lda lex_tab_h,y
@@ -493,6 +546,12 @@ l_ready:
         bmi got_whitespace
         bit flags_prop_lit_or_num
         bne start_lit
+        ;; Dispatch on (structural_char, parser_state) via a 2D jump table.
+        ;; The structural char code (sc_*) is 3 bits from the character
+        ;; properties; the parser state is also 3 bits.  They are combined as:
+        ;;   index = (sc_value << 3) | parser_st
+        ;; giving 8×8 = 64 entries.  Each entry holds the address-1 of the
+        ;; handler for that (input token, parser state) combination.
         and #prop_sc
         asl
         asl
@@ -507,6 +566,11 @@ l_ready:
         pha
         rts                     ; jump table; not end of subroutine
 got_whitespace:
+        ;; Whitespace is silently consumed.  Newlines additionally update
+        ;; line_num, reset col_num to 0, and record line_off (the file offset
+        ;; of the first byte of the new line).
+        ;; CR, LF, and CRLF are all treated as a single newline.  A LF that
+        ;; immediately follows a CR is ignored (prev_char check below).
         cpx #$0d
         beq got_newline
         cpx #$0a
@@ -541,7 +605,7 @@ got_newline1:
         iny
         lda regsave+3
         sta (state),y
-        jmp nextchar1
+        jmp nextchar1           ; skip col_num increment (already reset to 0)
 jmp_nextchar:
         jmp nextchar
 start_lit:
@@ -556,6 +620,16 @@ start_lit:
         lda #lex_literal
         putstate st::lexer_st   ; fall thru and process same char as literal
 l_literal:
+        ;; Accumulate characters into the string buffer while they are legal
+        ;; literal characters.  'flags' starts as prop_lit|prop_int|prop_num and
+        ;; is progressively narrowed by ANDing with each character's property
+        ;; bits.  When a character is not compatible with any remaining flag,
+        ;; the literal is complete:
+        ;;   prop_lit still set → keyword (null/true/false) → identify_literal
+        ;;   prop_int still set → integer → parse_signed_integer
+        ;;   neither set (but prop_num was set) → floating-point → J65_NUMBER
+        ;; The terminating character is NOT consumed; we jump back to parseloop
+        ;; so it is re-processed in lex_ready context.
         jsr getchar
         ldy #st::flags
         and (state),y
@@ -615,6 +689,10 @@ illegal_escape:
         lda #J65_ILLEGAL_ESCAPE
         rts                     ; error exit
 escape_later:
+        ;; \\ and \u escapes require a second pass over the completed string
+        ;; (unescape_unicode) because \u may need to look ahead for a surrogate
+        ;; pair and \\ can't be substituted in-place without corrupting the
+        ;; scan.  We store them raw in the buffer and set flags=1 as a reminder.
         lda #1
         putstate st::flags      ; flag indicating we need a later escape pass
         getstate st::str_idx    ; re-insert backslash first
@@ -635,6 +713,11 @@ putchar1:                       ; a contains char, y contains str_idx
         beq strtoolong
         tya
         putstate st::str_idx
+;; nextchar:  increment col_num, then advance to the next byte.
+;; nextchar1: skip the col_num increment (used after a newline, where col_num
+;;            has already been reset to 0).  Both paths save the current byte
+;;            as prev_char (for CRLF detection), then check whether we are
+;;            done or need more input before advancing charidx.
 nextchar:
         ldy #st::col_num
         jsr inc_state_long
@@ -749,6 +832,14 @@ lex_tab_h:
 flags_prop_lit_or_num:
         .byte prop_lit | prop_int | prop_num
 
+;; dispatch_tab: 2D jump table indexed by (sc_value << 3) | parser_state.
+;; Rows (outer index) = structural character (sc_none..sc_quote, 0..7).
+;; Columns (inner index) = parser state (par_ready..par_done, 0..7).
+;; Each cell contains (handler_address - 1) for the PHA/RTS dispatch pattern.
+;; Reading across a row: the same structural character token means different
+;; things (or is an error) depending on what the parser is currently expecting.
+;; For example, '[' (dt_lsq row) starts an array when a value is expected
+;; (par_ready / par_ready_or_close_array) but is an error otherwise.
 .define dt_none  disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1,disp_illegal_char-1
 .define dt_lsq   disp_start_array-1,disp_start_array-1,disp_exp_string-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1
 .define dt_lcur  disp_start_obj-1,disp_start_obj-1,disp_exp_string-1,disp_exp_string-1,disp_exp_colon-1,disp_exp_comma-1,disp_exp_comma-1,disp_parse_error-1
@@ -785,10 +876,18 @@ dispatch_tab_h:
 .undefine dt_comma
 .undefine dt_quote
 
+;; When descending into an object or array, these pairs record the two parser
+;; states to switch to: the state for parsing the first element (pushed as the
+;; "outer" parser_st2, restored when we later pop), and the state for
+;; the contents (stored in parser_st).
+;; Index 0-1: object  → contents=par_key_or_close_object,  outer=par_need_comma_or_close_object
+;; Index 2-3: array   → contents=par_ready_or_close_array, outer=par_need_comma_or_close_array
 close_states:
         .byte par_key_or_close_object, par_need_comma_or_close_object
         .byte par_ready_or_close_array, par_need_comma_or_close_array
 
+;; literal_errors: error code to return if a literal is seen in each parser
+;; state.  0 means a literal is allowed here.  Must match parser state enum order.
 literal_errors:                 ; needs to match parser state enum
         .byte 0, 0, J65_EXPECTED_STRING, J65_EXPECTED_STRING, J65_EXPECTED_COLON
         .byte J65_EXPECTED_COMMA, J65_EXPECTED_COMMA, J65_PARSE_ERROR
@@ -828,6 +927,10 @@ literal_errors:                 ; needs to match parser state enum
         pla
         sta inbuflast
         txa
+        ;; The callback returns 0 on success or a negative int8_t on error.
+        ;; Shifting left by 1 moves bit 7 (the sign bit) into the carry flag,
+        ;; so callers can test for an error with BCS.  The original value is
+        ;; then restored from X for the caller to inspect if needed.
         asl                     ; set carry if return value is negative
         txa                     ; get return value back into a
         rts                     ; end of subroutine
@@ -934,6 +1037,16 @@ p_key:  lda #J65_KEY
 ;; unescape \\ and \u in the string buffer.
 ;; returns carry set on error.  clear on success.
 ;; clobbers all registers.
+;;
+;; Uses a two-pointer compaction loop through strbuf:
+;;   y   = read index (0 .. str_idx-1, scanning raw bytes as stored by the lexer)
+;;   tmp1 = write index (output bytes are compacted toward the front)
+;; tmp2 holds str_idx (the original string length).
+;; When a \\ is found, it is replaced by a single backslash.
+;; When a \u is found, the following 4 hex digits are decoded and the Unicode
+;; codepoint is converted to UTF-8 in-place via long1toutf8.
+;; Surrogate pairs (\uD800-\uDBFF immediately followed by \uDC00-\uDFFF) are
+;; recognised and combined into a single codepoint before UTF-8 encoding.
 .proc unescape_unicode
         getstate st::str_idx
         sta tmp2
@@ -956,15 +1069,18 @@ escape: cpy tmp2
         lda (strbuf),y
         iny
         cmp #$5c                ; backslash
-        beq loop1
+        beq loop1               ; \\ → emit single backslash
         cmp #'u'
         beq unicode
 error:  sec
         rts
 unicode:
-        jsr read4hexintosreg
+        jsr read4hexintosreg    ; decode 4 hex digits into sreg
         bcs error
-        jsr movesregtolong1
+        jsr movesregtolong1     ; zero-extend sreg into long1
+        ;; Look ahead: if the next two bytes in the buffer are '\u' and the
+        ;; value we just read is a left surrogate (D800-DBFF), try to consume
+        ;; a right surrogate (DC00-DFFF) to form a combined codepoint.
         lda (strbuf),y
         cpy tmp2
         beq bmp
@@ -977,24 +1093,24 @@ unicode:
         cmp #'u'
         beq check_surrogate
 bmp0:   dey
-bmp:    jsr long1toutf8
+bmp:    jsr long1toutf8         ; encode codepoint in long1 as UTF-8 into strbuf
         jmp loop
 bmp1:   pla
         tay
         jmp bmp
 check_surrogate:
         jsr is_sreg_left_surrogate
-        bcc bmp0
+        bcc bmp0                ; not a left surrogate; treat as BMP char
         tya
-        sub #1
+        sub #1                  ; save read position just before the second \u
         pha
-        iny
-        jsr read4hexintosreg
-        bcs bmp1
+        iny                     ; skip past the 'u'
+        jsr read4hexintosreg    ; decode the second \uXXXX into sreg
+        bcs bmp1                ; malformed hex: abandon surrogate, restore pos
         jsr is_sreg_right_surrogate
-        bcc bmp1
-        pla
-        jsr combine_surrogates
+        bcc bmp1                ; not a right surrogate: abandon, restore pos
+        pla                     ; discard saved position (surrogate pair consumed)
+        jsr combine_surrogates  ; merge left (long1) + right (sreg) → long1
         jmp bmp
 done:   lda tmp1
         putstate st::str_idx
@@ -1098,6 +1214,18 @@ fail:   sec
 ;; converts long1 to utf8 in strbuf at tmp1.
 ;; (output index is in tmp1)
 ;; preserves y.
+;;
+;; UTF-8 encoding ranges (RFC 3629):
+;;   U+0000..U+007F   → 0xxxxxxx                    (1 byte)
+;;   U+0080..U+07FF   → 110xxxxx 10xxxxxx            (2 bytes)
+;;   U+0800..U+FFFF   → 1110xxxx 10xxxxxx 10xxxxxx   (3 bytes)
+;;   U+10000..U+10FFFF→ 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx (4 bytes)
+;;
+;; The strategy is to use utf8_shift to reorganise the data bits of the
+;; codepoint across the long1 bytes, then apply the appropriate header bits
+;; (10xxxxxx continuation prefix, or 110/1110/11110 leading prefix), and
+;; finally write the bytes in reverse order via writeutf8.  x is set to
+;; (byte_count - 1) on the jmp done path so writeutf8 writes the right count.
 .proc long1toutf8
         sty tmp5
         ldy tmp1
@@ -1105,35 +1233,35 @@ fail:   sec
         bne len4
         lda long1+1
         beq latin1
-        cmp #8
+        cmp #8              ; long1+1 >= 8 means codepoint >= $0800
         bge len3
 len2:   ldx #1
-        jsr utf8_shift
+        jsr utf8_shift      ; move bits 7:6 of long1 into bits 1:0 of long1+1
         lda long1
         and #%00111111
-        ora #%10000000
+        ora #%10000000      ; 10xxxxxx continuation byte
         sta long1
         lda long1+1
         and #%00011111
-        ora #%11000000
+        ora #%11000000      ; 110xxxxx leading byte (5 data bits)
         sta long1+1
         ldx #1
         jmp done
 len3:   ldx #1
-        jsr utf8_shift
+        jsr utf8_shift      ; move bits 7:6 of long1   into bits 1:0 of long1+1
         ldx #2
-        jsr utf8_shift
+        jsr utf8_shift      ; move bits 7:6 of long1+1 into bits 1:0 of long1+2
         lda long1
         and #%00111111
-        ora #%10000000
+        ora #%10000000      ; 10xxxxxx
         sta long1
         lda long1+1
         and #%00111111
-        ora #%10000000
+        ora #%10000000      ; 10xxxxxx
         sta long1+1
         lda long1+2
         and #%00001111
-        ora #%11100000
+        ora #%11100000      ; 1110xxxx leading byte (4 data bits)
         sta long1+2
         ldx #2
         jmp done
@@ -1145,25 +1273,25 @@ len4:   ldx #1
         jsr utf8_shift
         lda long1
         and #%00111111
-        ora #%10000000
+        ora #%10000000      ; 10xxxxxx
         sta long1
         lda long1+1
         and #%00111111
-        ora #%10000000
+        ora #%10000000      ; 10xxxxxx
         sta long1+1
         lda long1+2
         and #%00111111
-        ora #%10000000
+        ora #%10000000      ; 10xxxxxx
         sta long1+2
         lda long1+3
         and #%00000111
-        ora #%11110000
+        ora #%11110000      ; 11110xxx leading byte (3 data bits)
         sta long1+3
         ldx #3
         jmp done
 latin1: lda long1
-        bmi len2
-        ldx #0                  ; length 1, already in the right format
+        bmi len2            ; U+0080..U+00FF need 2-byte encoding despite fitting in a byte
+        ldx #0              ; U+0000..U+007F: 1 byte, already correct bit pattern
 done:   jsr writeutf8
         sty tmp1
         ldy tmp5
@@ -1201,17 +1329,24 @@ done:   plp
         rts
 .endproc                ; shift_left_by_2
 
-;; shift the last 4-x bytes of long1 left by 2 bits.
-;; shifts in the top two bits from the previous byte, too.
+;; utf8_shift(x): "bubble" the top 2 bits of long1[x-1] into the bottom 2
+;; bits of long1[x], making room for a UTF-8 continuation marker in long1[x-1].
+;;
+;; Mechanically: shift the entire 32-bit long1 left by 2 (carrying bits from
+;; byte x-1 into byte x), then shift byte x-1 (= x after dex) right by 2 to
+;; undo the shift on that byte only.  The net result:
+;;   long1[x]   gains bits 7:6 of the original long1[x-1] in its bits 1:0
+;;   long1[x-1] retains its original bits 5:0 in positions 5:0 (bits 7:6 = 0)
+;;
 ;; clobbers a, x.  preserves y.
 .proc utf8_shift
         dex
         txa
         pha
-        jsr shift_left_by_2
+        jsr shift_left_by_2     ; shift all of long1 left 2 bits
         pla
         tax
-        lsr long1,x
+        lsr long1,x             ; undo the 2-bit shift on byte[x] = original[x-1]
         lsr long1,x
         rts
 .endproc                ; utf8_shift
@@ -1244,23 +1379,35 @@ yes:    sec
 
 ;; combine left surrogate in long1 with right surrogate in sreg.
 ;; result in long1.  preserves y.
+;;
+;; Formula (RFC 2781): U = 0x10000 + (L_bits << 10) + R_bits
+;;   where L_bits = left_surrogate  & 0x3FF  (bits 9:0)
+;;         R_bits = right_surrogate & 0x3FF  (bits 9:0)
+;;
+;; On entry, movesregtolong1 has already placed the left surrogate in long1
+;; and read4hexintosreg has placed the right surrogate in sreg.
+;;
+;; Implementation: extract L_bits[9:8] from long1+1 (bits 1:0), then shift
+;; the 10-bit L_bits value left by 10 (= into bits 19:10) by moving long1[0]
+;; to long1[1] and shifting that pair left 2 bits.  Then OR in R_bits (10 bits
+;; from sreg), and finally add 0x10000 by incrementing long1+2.
 .proc combine_surrogates
         lda long1+1
-        and #3
-        sta long1+2
+        and #3              ; keep L_bits[9:8] (2 bits) in A
+        sta long1+2         ; long1+2 = L_bits[9:8]
         lda long1
-        sta long1+1
+        sta long1+1         ; long1+1 = L_bits[7:0]
         asl long1+1
-        rol long1+2
+        rol long1+2         ; shift left 1: long1+2:long1+1 = L_bits << 9 so far
         asl long1+1
-        rol long1+2
+        rol long1+2         ; shift left 2: long1+2:long1+1 = L_bits << 10
         lda sreg
-        sta long1
+        sta long1           ; long1+0 = R_bits[7:0]
         lda sreg+1
-        and #3
-        ora long1+1
+        and #3              ; R_bits[9:8]
+        ora long1+1         ; merge with L_bits[1:0] (which are now at bits 1:0)
         sta long1+1
-        inc long1+2
+        inc long1+2         ; add 0x10000 (bit 16)
         rts
 .endproc                ; combine_surrogates
 
@@ -1279,8 +1426,13 @@ yes:    sec
         bit long1+3
         bpl done                ; if hi bit is clear, it is okay
 not_okay:
-        sec                     ; otherwise, set carry and overflow
-        bit an_rts
+        ;; Set both carry and overflow to signal "integer overflow" to the
+        ;; caller (so it can fall back to J65_NUMBER).
+        ;; Trick: 'bit an_rts' reads the byte at 'an_rts', which is the RTS
+        ;; opcode ($60 = %0110_0000).  The BIT instruction sets V from bit 6
+        ;; of the operand, so V is set.  SEC sets C.
+        sec                     ; set carry
+        bit an_rts              ; set overflow (V) because RTS opcode $60 has bit 6 set
 done:
 an_rts: rts
 negative:
@@ -1338,10 +1490,17 @@ error:  clv
 
 ;; multiplies long1 by 10. clobbers a and long2. preserves x y.
 ;; returns with carry set if result overflows a 32-bit unsigned long.
+;;
+;; Algorithm: 10x = 2x + 8x
+;;   1. Shift long1 left by 1  → long1 = 2x  (save a copy in long2)
+;;   2. Shift long1 left by 1  → long1 = 4x
+;;   3. Shift long1 left by 1  → long1 = 8x
+;;   4. Add long2 (= 2x)       → long1 = 10x
+;; Any shift that sets carry means the result would overflow 32 bits.
 .proc multiply_long1_by_10
-        jsr shift_long1_left_by_1
+        jsr shift_long1_left_by_1   ; long1 = 2x
         bcs done
-        lda long1
+        lda long1                   ; save 2x in long2
         sta long2
         lda long1+1
         sta long2+1
@@ -1349,11 +1508,11 @@ error:  clv
         sta long2+2
         lda long1+3
         sta long2+3
-        jsr shift_long1_left_by_1
+        jsr shift_long1_left_by_1   ; long1 = 4x
         bcs done
-        jsr shift_long1_left_by_1
+        jsr shift_long1_left_by_1   ; long1 = 8x
         bcs done
-        lda long1
+        lda long1                   ; long1 = 8x + 2x = 10x
         add long2
         sta long1
         lda long1+1
@@ -1528,6 +1687,11 @@ flags_prop_int:
 ;; carry clear on success.
 ;; carry set on error, with error event in a.
 ;; clobbers x, y.
+;;
+;; The stack grows downward within the first 256-byte page.  stack_idx starts
+;; at 255 (empty) and decrements on each push.  The value is written at the
+;; offset given by the current stack_idx, then stack_idx is decremented.
+;; The stack is full if stack_idx would go below stack_min.
 .proc push_state_stack
         tax
         getstate st::stack_idx
@@ -1536,8 +1700,8 @@ flags_prop_int:
         blt stack_full
         tay
         txa
-        sta (state),y
-        dey
+        sta (state),y           ; store value at current stack_idx
+        dey                     ; decrement stack_idx
         tya
         putstate st::stack_idx
         clc
@@ -1552,10 +1716,13 @@ stack_full:
 ;; carry clear on success, with popped state in a.
 ;; carry set on error, with error event in a.
 ;; clobbers x, y.
+;;
+;; Increment stack_idx first, then read the value.  If the incremented
+;; stack_idx wraps around to 0 (was 255 = empty), the stack is empty.
 .proc pop_state_stack
         getstate st::stack_idx
         tay
-        iny
+        iny                     ; increment stack_idx (will wrap to 0 if was 255)
         beq stack_empty
         lda (state),y
         tax
@@ -1597,8 +1764,10 @@ done:   rts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; const char * __fastcall__ j65_get_string(const j65_state *s);
-;; (string buffer is the second 256 bytes of state, so all we have
-;; to do is increment the high byte of the argument)
+;; The argument 's' arrives in AX (lo byte in A, hi byte in X).
+;; The string buffer is always the second 256-byte page of the parser struct,
+;; i.e. 's' + 256.  Adding 256 to a 16-bit pointer only changes the hi byte,
+;; so we just increment X (the hi byte) and return.
 .proc _j65_get_string
         inx
         rts
@@ -1677,6 +1846,7 @@ get_long:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; uint8_t __fastcall__ j65_get_current_depth(const j65_state *s);
+;; depth = 255 - stack_idx   (stack_idx starts at 255 = empty, decrements on push)
 .proc _j65_get_current_depth
         ldy #st::stack_idx
         sta ptr1
@@ -1692,6 +1862,7 @@ get_long:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; uint8_t __fastcall__ j65_get_max_depth(const j65_state *s);
+;; max_depth = 256 - stack_min = 0 - stack_min (mod 256), i.e. the 8-bit negation
 .proc _j65_get_max_depth
         ldy #st::stack_min
         sta ptr1
