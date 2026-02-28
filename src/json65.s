@@ -1049,7 +1049,7 @@ done:   rts
         rts
 fail:   sec
         rts
-.endproc                ; and1hexintosreg
+.endproc                ; or1hexintosreg
 
 ;; converts ascii char in a to nibble in a.
 ;; sets carry if not a hex digit.
@@ -1214,7 +1214,7 @@ done:   plp
         lsr long1,x
         lsr long1,x
         rts
-.endproc                ; fancy_shift
+.endproc                ; utf8_shift
 
 ;; preserves y.
 ;; sets carry if sreg is a left surrogate.
@@ -1262,7 +1262,7 @@ yes:    sec
         sta long1+1
         inc long1+2
         rts
-.endproc
+.endproc                ; combine_surrogates
 
 ;; parse signed integer in strbuf (length in str_idx).
 ;; on success, carry clear and result in long1 (regsave).
@@ -1457,7 +1457,7 @@ loop:   lda (strbuf),y
         bpl loop
         lda #0                  ; set zero flag
 done:   rts
-.endproc                    ; compare_strings
+.endproc                ; compare_strings
 
 ;; Handle a literal (a number, or null, true, or false).
 ;; On entry, a should contain flags.  (prop_lit, prop_int, prop_num)
