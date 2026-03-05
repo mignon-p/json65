@@ -240,8 +240,8 @@ uint32_t __fastcall__ j65_get_line_offset (const j65_parser *p);
   before displaying it to the user.
 
   Lines may be terminated either by a linefeed (UNIX standard) or
-  a carriage return (Apple II standard).  However, a carriage
-  return is not counted if it is immediately preceded by a linefeed.
+  a carriage return (Apple II standard).  However, a linefeed
+  is not counted if it is immediately preceded by a carriage return.
   (Thus allowing MS-DOS/Windows standard line endings to be supported
   as well.)
 */
